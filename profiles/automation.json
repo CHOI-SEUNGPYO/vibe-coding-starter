@@ -1,0 +1,7 @@
+{
+  "name": "automation",
+  "description": "반복 작업을 자동화하며 미리보기, 중복 실행, 실패 복구를 검증합니다.",
+  "skills": ["task-delivery", "parallel-work", "release-check", "gh-address-comments", "playwright"],
+  "mcp": ["openai-docs", "playwright"],
+  "checks": []
+}

@@ -1,0 +1,7 @@
+# Exact package version also supports installation into an existing project.
+# npx reuses the local package or downloads this version into its cache.
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@0.0.85", "--browser", "chromium", "--headless", "--isolated"]
+startup_timeout_sec = 60
+tool_timeout_sec = 60

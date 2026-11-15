@@ -1,0 +1,25 @@
+# Credentials and machine state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.codex/auth.json
+.codex/sessions/
+.codex/log/
+.vibe/bin/
+.vibe/tmp/
+.vibe/reports/
+.vibe/local.json
+# Dependencies and generated browser evidence
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+output/
+playwright-report/
+test-results/
+.playwright-mcp/
+.DS_Store
+Thumbs.db

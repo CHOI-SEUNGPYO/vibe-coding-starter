@@ -1,0 +1,29 @@
+# Project defaults. Account model choice and organization policy remain upstream.
+# Verified against Codex CLI 0.169.0-alpha.11.1 on 2026-11-15.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+[agents]
+enabled = true
+# Excludes the primary agent: at most 1 coordinator + 3 concurrent helpers.
+max_concurrent_threads_per_session = 3
+
+# MCP entries are appended from the selected environment profile.
+
+# Optional MCP: openai-docs
+# Official public documentation server. No API key required.
+[mcp_servers.openai-docs]
+url = "https://developers.openai.com/mcp"
+startup_timeout_sec = 30
+tool_timeout_sec = 60
+
+
+# Optional MCP: playwright
+# Exact package version also supports installation into an existing project.
+# npx reuses the local package or downloads this version into its cache.
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@0.0.85", "--browser", "chromium", "--headless", "--isolated"]
+startup_timeout_sec = 60
+tool_timeout_sec = 60

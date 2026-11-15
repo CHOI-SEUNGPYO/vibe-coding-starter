@@ -1,0 +1,7 @@
+{
+  "name": "minimal",
+  "description": "작은 수정과 도구 제작에 필요한 핵심 작업 규칙만 사용합니다.",
+  "skills": ["task-delivery", "parallel-work", "release-check"],
+  "mcp": [],
+  "checks": []
+}

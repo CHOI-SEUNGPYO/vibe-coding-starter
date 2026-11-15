@@ -1,0 +1,8 @@
+{
+  "name": "vibe-coding-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reproducible local MCP runtime for the Codex starter",
+  "engines": { "node": ">=22" },
+  "devDependencies": { "@playwright/mcp": "0.0.85" }
+}

@@ -1,0 +1,36 @@
+{
+  "files": {
+    ".agents/skills/gh-fix-ci/LICENSE.txt": "4dd13869245e356246a5b770723247bbb80a8f07a181d1d3d873a1734297cdb9",
+    ".agents/skills/gh-fix-ci/SKILL.md": "7b326b4a2f0f5f85122144628ec02077e48841e0e0e82efce88b3415bcfb7c26",
+    ".agents/skills/gh-fix-ci/agents/openai.yaml": "36f73b9450504983d1647c960689596f59bf9147c14b1b43162912ed7ada9af6",
+    ".agents/skills/gh-fix-ci/assets/github-small.svg": "ee05e92d373d4d84f4612af3c1090ef67698d421bbe30896a4ed5a00cb86a069",
+    ".agents/skills/gh-fix-ci/assets/github.png": "d55a9baa41798d8b5108e3058df3a5bda09914ea9fd73b49929cc38a8832424f",
+    ".agents/skills/gh-fix-ci/scripts/inspect_pr_checks.py": "9459e5b03f86785d184a83e5cd8d621b832e918ec04158a2962d867785812c6c",
+    ".agents/skills/parallel-work/LICENSE.txt": "08212d63f13663209503cb2d6f49d1c001471bce5e7f99f83faa0546daba23e0",
+    ".agents/skills/parallel-work/SKILL.md": "18d811b263faa383d50e9a2f9c1ed0959b0d7c78701b5300bf7bdbc2e9c04426",
+    ".agents/skills/playwright/LICENSE.txt": "9a7110fc2d2f964038e5dc49128f908f29f47a574c961cba16085914e879cbda",
+    ".agents/skills/playwright/NOTICE.txt": "417d5d3372914ecfd9fe102ac1d7dc2119253209f9718d6c222f616876c1904b",
+    ".agents/skills/playwright/SKILL.md": "0ffaabcc8e0990627c4725f18bf1c7955534a796c1c199e872909de2013ce6a8",
+    ".agents/skills/playwright/agents/openai.yaml": "ddda43720fc566fffa45264be8f17f7745a3cee28d5245d41d3b963bc9967230",
+    ".agents/skills/playwright/assets/playwright-small.svg": "f1d213c0f76735d8272c3d3e9fbf71fe7b894e2d1588907044c780f2c33a9732",
+    ".agents/skills/playwright/assets/playwright.png": "521669f088c838196c6c852ccc9abdd7234d8f37fc9a8a7a9af7db2d50193381",
+    ".agents/skills/playwright/references/cli.md": "7c069a8206ba20b9ddbdc42436b04de30bb3aa4a825ba98680757ee62e954900",
+    ".agents/skills/playwright/references/workflows.md": "a2b5835a00ebee3906c146adf7f764f7718ea3f89a8702d86eaa135dfe0fc8c2",
+    ".agents/skills/playwright/scripts/playwright_cli.sh": "aa3fdff5d0e4556177f4dfd5f04117e772aa54f94b6a2e34b6c0edf629c6b9b5",
+    ".agents/skills/release-check/LICENSE.txt": "08212d63f13663209503cb2d6f49d1c001471bce5e7f99f83faa0546daba23e0",
+    ".agents/skills/release-check/SKILL.md": "f4bb869538c7650f91ab68641d9a7e6a5ac15389f01a1d3d3ee24a5eef911059",
+    ".agents/skills/task-delivery/LICENSE.txt": "08212d63f13663209503cb2d6f49d1c001471bce5e7f99f83faa0546daba23e0",
+    ".agents/skills/task-delivery/SKILL.md": "e7b06dc93a4d9c22590b91dc89cae6d33d0616960fdb9a57e9dec88c45f7f9de",
+    ".codex/agents/explorer.toml": "7d3b6a5ea97f12c30efce9ff10cd86248d72f8e5080f2f03701282bc0e40d306",
+    ".codex/agents/reviewer.toml": "3403436707738c4ed6bc3d7657e5b063e21dbc421107fa46837dc2f8ae8d375b",
+    ".codex/agents/tester.toml": "1b6adb922a9fdcda827ca444ffab357b15c3b683ed4ad146f92cc21598d19c60",
+    ".codex/config.toml": "04d04c84852e39e007a919a3148a892e105b40535b4947fac41237f9c6b71965",
+    "AGENTS.md": "2544c16f82db987f18b996fa1469acd9e711c824d9c4a502895c09208c956f81"
+  },
+  "mcp": [
+    "openai-docs",
+    "playwright"
+  ],
+  "profile": "web",
+  "version": 1
+}

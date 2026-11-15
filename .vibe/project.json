@@ -1,0 +1,15 @@
+{
+  "checks": [
+    { "name": "프로필·설치 상태", "command": ["{python}", "scripts/vibe.py", "check"], "cwd": ".", "timeout_seconds": 30 },
+    { "name": "스킬 출처와 무결성", "command": ["{python}", "scripts/check_integrity.py"], "cwd": ".", "timeout_seconds": 30 },
+    { "name": "설치·오류 처리 회귀 검사", "command": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-v"], "cwd": ".", "timeout_seconds": 120 }
+  ],
+  "name": "vibe-coding-starter",
+  "purpose": "목적에 맞는 Codex 하네스·스킬·MCP를 재현 가능하게 구성하고 실제 동작을 검증한다.",
+  "success_criteria": [
+    "5개 프로필을 기존 사용자 파일 손상 없이 설치·전환한다.",
+    "원본·활성 스킬의 출처와 파일 해시를 검증한다.",
+    "검증 명령이 없거나 실패하면 완료로 처리하지 않는다.",
+    "별도 온라인 검사에서 공식 문서 검색과 실제 브라우저 조작을 확인한다."
+  ]
+}

@@ -1,0 +1,12 @@
+# Project defaults. Account model choice and organization policy remain upstream.
+# Verified against Codex CLI 0.169.0-alpha.11.1 on 2026-11-15.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+[agents]
+enabled = true
+# Excludes the primary agent: at most 1 coordinator + 3 concurrent helpers.
+max_concurrent_threads_per_session = 3
+
+# MCP entries are appended from the selected environment profile.
