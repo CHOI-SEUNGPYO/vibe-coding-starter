@@ -2,7 +2,7 @@
 
 [![Validate starter](https://github.com/CHOI-SEUNGPYO/vibe-coding-starter/actions/workflows/validate.yml/badge.svg)](https://github.com/CHOI-SEUNGPYO/vibe-coding-starter/actions/workflows/validate.yml)
 
-**Codex에서 바로 쓰는 목적별 바이브코딩 환경.** 작업 규칙, 역할별 에이전트, 실제 스킬, MCP 연결 설정과 검증 도구가 들어 있습니다. 기본 `web` 환경의 `.codex`와 `.agents/skills`도 이미 적용된 상태로 제공합니다.
+**공식 도구와 커뮤니티 전문 스킬을 조합한 Codex 개발 환경.** 작업 규칙, 역할별 에이전트, 스킬 14종, MCP 연결과 검증 도구가 들어 있습니다. 기본 `web` 환경에는 스킬 10종과 MCP 3개가 이미 적용되어 있습니다.
 
 프레임워크나 모델 이름을 강제하지 않습니다. 현재 계정의 모델과 프로젝트의 기술 스택을 유지하고, 해야 할 일에 맞춰 환경을 고릅니다. 새 컴퓨터에서 필요한 작업은 의존성 복원과 본인 계정 인증입니다.
 
@@ -17,7 +17,7 @@ Git·Python **3.11+**·Node.js **22+**·Codex가 필요합니다. Windows에서 
 python scripts/setup.py --profile web
 ```
 
-이 명령이 프로필 적용 → 잠금 파일대로 MCP 설치 → Chromium 준비 → 설정·스킬 검사 → 공식 문서 검색·브라우저 조작 시험까지 실행합니다. 실패하면 성공이라고 표시하지 않습니다. Linux에서 브라우저 시스템 라이브러리가 부족하면 안내에 따라 `node node_modules/playwright/cli.js install --with-deps chromium`으로 준비합니다.
+이 명령이 프로필 적용 → 잠금 파일대로 MCP 설치 → Chromium 준비 → 설정·스킬 검사 → OpenAI·라이브러리 문서 검색·브라우저 조작 시험까지 실행합니다. 실패하면 성공이라고 표시하지 않습니다. Linux에서 브라우저 시스템 라이브러리가 부족하면 안내에 따라 `node node_modules/playwright/cli.js install --with-deps chromium`으로 준비합니다.
 
 3. Codex에서 폴더를 열고 프로젝트를 신뢰한 뒤 새 채팅을 시작합니다. 모델은 계정에서 선택한 것을 사용합니다.
 4. 원하는 기능을 말합니다. 에이전트가 `.vibe/project.json`의 목표·완료 조건·검사 명령을 **실제 앱에 맞게** 바꾸도록 함께 요청하세요. 처음 들어 있는 검사는 이 starter 자체를 검사합니다.
@@ -33,6 +33,8 @@ docs/environments.md의 웹 환경 사용 순서를 따라 레퍼런스를 먼�
 ## 목적별로 어떻게 쓰나요?
 
 환경을 바꿀 때도 `python scripts/setup.py --profile api`처럼 프로필 이름만 바꿉니다. 자세한 순서와 목적별 요청 예시는 [환경 사용 가이드](docs/environments.md)에 있습니다. 레퍼런스는 복제할 완성품이 아니라 정보 배치·사용 흐름·컴포넌트 동작을 비교할 근거로 사용합니다.
+
+구현은 Ponytail, 원인이 불명확한 실패는 디버깅 스킬, 검토는 Ponytail Review로 연결합니다. 화면·React·API·Postgres·Python 전문 지침은 해당 작업일 때 사용합니다. [목적별 스킬 사용 순서와 요청 예시](docs/skill-routing.md)
 
 | 만들려는 것 | 환경 | 처음 볼 레퍼런스 | 진행 순서 |
 | --- | --- | --- | --- |
@@ -54,7 +56,7 @@ docs/environments.md의 웹 환경 사용 순서를 따라 레퍼런스를 먼�
 | 오케스트레이션 | [.codex/agents](.codex/agents), [운영 방식](docs/orchestration.md) | 주 에이전트 + 조사·검토·테스트 보조 최대 3개; 파일 담당 분리 |
 | 활성 스킬 | [.agents/skills](.agents/skills) | 현재 web 프로필의 실제 발견 경로 |
 | 전체 스킬 원본 | [skills](skills), [skills.lock.json](skills.lock.json) | 프로필별 설치 원본, 출처·고정 커밋·파일 해시 |
-| MCP 설정 | [mcp](mcp), [연결 가이드](docs/mcp.md) | 공식 문서 검색, 격리된 브라우저 자동화, 선택적 GitHub 연결 |
+| MCP 설정 | [mcp](mcp), [연결 가이드](docs/mcp.md) | OpenAI·라이브러리 문서 검색, 격리된 브라우저 자동화, 선택적 GitHub 연결 |
 | 검증과 CI | [scripts](scripts), [GitHub Actions](.github/workflows/validate.yml) | 파일 보존·환경 전환·오류 처리·스킬 무결성·실제 브라우저 검사 |
 
 에이전트 역할은 작업 분담 지침입니다. 별도 OS 권한 격리를 만들지 않으며, 실제 권한은 부모 세션과 조직 정책을 따릅니다. 작은 작업은 주 에이전트가 직접 처리합니다.
@@ -69,14 +71,25 @@ docs/environments.md의 웹 환경 사용 순서를 따라 레퍼런스를 먼�
 | `playwright` | [OpenAI 공식 스킬](https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431/skills/.curated/playwright) · Apache-2.0 | 브라우저 조작·UI 확인의 작업 절차 | web, automation |
 | `gh-fix-ci` | [OpenAI 공식 스킬](https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431/skills/.curated/gh-fix-ci) · Apache-2.0 | 실패한 GitHub Actions 원인 조사·수정 | web, api |
 | `gh-address-comments` | [OpenAI 공식 스킬](https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431/skills/.curated/gh-address-comments) · Apache-2.0 | PR 리뷰 의견 확인·반영 | automation |
+| `ponytail` | [DietrichGebert/Ponytail](https://github.com/DietrichGebert/ponytail) · MIT | 기존 코드·표준 기능을 활용한 구현 | 전체 |
+| `ponytail-review` | [DietrichGebert/Ponytail](https://github.com/DietrichGebert/ponytail) · MIT | 정확성·보안·회귀·성능·불필요한 코드 검토 | 전체 |
+| `debugging-and-error-recovery` | [Addy Osmani](https://github.com/addyosmani/agent-skills) · MIT | 재현·원인 조사·수정·회귀 확인 | 전체, 관련 오류에 사용 |
+| `ui-ux-pro-max` | [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) · MIT | 로컬 검색으로 디자인 시스템·타이포·레이아웃 후보 선택 | web |
+| `vercel-react-best-practices` | [Vercel](https://github.com/vercel-labs/agent-skills) · MIT 선언 보존 | React·Next.js 성능 지침 | web, React일 때 |
+| `api-and-interface-design` | [Addy Osmani](https://github.com/addyosmani/agent-skills) · MIT | API 계약·멱등성·재시도·오류 설계 | api, automation |
+| `supabase-postgres-best-practices` | [Supabase](https://github.com/supabase/agent-skills) · MIT | Postgres 인덱스·연결·권한·트랜잭션 | api, data, Postgres일 때 |
+| `python-patterns` | [ECC](https://github.com/affaan-m/ECC) · MIT | Python 타입·예외·자원 관리·구조 | data, automation |
 
-외부 스킬은 **`49f948faa9258a0c61caceaf225e179651397431`**의 원본을 가져왔으며 라이선스와 NOTICE를 보존했습니다. 전역 설치된 유료 플러그인이나 개인 스킬을 복사하지 않았습니다. [출처·호환성 설명](docs/skills.md), [외부 라이선스](THIRD_PARTY_NOTICES.md)
+외부 스킬은 각각 **고정된 공개 커밋**에서 가져왔고 라이선스·출처·파일 해시를 기록했습니다. OpenAI 스킬의 고정 커밋은 `49f948faa9258a0c61caceaf225e179651397431`, Ponytail은 v5.3.3입니다. UI UX Pro Max의 Codex 경로 수정은 원본 해시와 수정 이유를 따로 남겼습니다. Vercel의 MIT 선언은 원본 README로 보존합니다. 전역 플러그인의 개인 설정·자동 hook을 복사하지 않았습니다. [출처·호환성 설명](docs/skills.md), [외부 라이선스](THIRD_PARTY_NOTICES.md)
+
+Ponytail은 프로젝트의 `.agents/skills/ponytail`을 기준으로 사용합니다. 전역 Engineering Suite가 설치되어 있어도 그 플러그인을 수정하지 않습니다. 현재 요청과 한국어 설명을 우선하며, 스킬의 일률적인 승인·출력 규칙 때문에 이미 요청된 작업을 중단하지 않도록 조합했습니다.
 
 원본 Playwright 스킬의 Bash CLI와 이 저장소의 Playwright MCP는 별개입니다. Windows에서는 구성된 MCP를 우선합니다. `gh-*`의 CLI 절차에는 GitHub CLI 설치·로그인이 필요하며, 연결된 GitHub 앱이 있으면 그 도구를 먼저 사용합니다. 이 저장소에 계정 인증 정보는 없습니다.
 
 ## MCP는 어디까지 준비되어 있나요?
 
 - **OpenAI Docs:** 키 없이 사용하는 공식 검색 서버. web/api/data/automation에서 활성화합니다.
+- **Context7:** 공개 라이브러리 문서를 검색합니다. web/api/data/automation에서 활성화하며 키 없이 실제 조회를 확인했습니다. 요청 한도나 인증 정책은 서비스에 따라 바뀔 수 있고, 설치 버전과 결과 출처를 함께 확인합니다.
 - **Playwright:** `@playwright/mcp@0.0.85`와 의존성을 고정했습니다. web/automation에서 격리 Chromium을 실행합니다.
 - **GitHub:** 현재 Codex에 연결한 GitHub 앱을 우선합니다. 별도 CLI용 원격 MCP 설정도 포함되어 있으며 읽기 전용입니다. 본인 토큰이 필요한 선택 연결이므로 기본으로 켜지 않습니다.
 
@@ -88,7 +101,7 @@ GitHub·배포 서비스·DB의 계정 권한은 fork로 전달되지 않습니�
 # 현재 환경의 실제 검사 실행
 python scripts/vibe.py verify
 
-# MCP 서버의 실제 문서 검색 + 브라우저 조작 시험
+# OpenAI Docs + Context7 실제 문서 검색 + 브라우저 조작 시험
 node scripts/check_mcp.mjs
 
 # 변경될 파일을 먼저 확인하고 프로필 전환

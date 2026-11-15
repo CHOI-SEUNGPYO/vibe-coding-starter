@@ -1,7 +1,7 @@
 {
   "name": "web",
   "description": "웹 화면과 사용자 흐름을 구현하고 브라우저에서 확인합니다.",
-  "skills": ["task-delivery", "parallel-work", "release-check", "playwright", "gh-fix-ci"],
-  "mcp": ["openai-docs", "playwright"],
+  "skills": ["task-delivery", "parallel-work", "release-check", "ponytail", "ponytail-review", "debugging-and-error-recovery", "ui-ux-pro-max", "vercel-react-best-practices", "playwright", "gh-fix-ci"],
+  "mcp": ["openai-docs", "context7", "playwright"],
   "checks": []
 }

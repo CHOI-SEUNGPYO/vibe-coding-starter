@@ -9,11 +9,6 @@ import { resolve, dirname } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const protocolVersion = '2025-03-26';
 const initialize = { protocolVersion, capabilities: {}, clientInfo: { name: 'vibe-smoke-check', version: '1.0.0' } };
-const mode = process.argv[2] ?? 'all';
-if (!['all', 'docs', 'browser'].includes(mode)) {
-  console.error('Usage: node scripts/check_mcp.mjs [all|docs|browser]');
-  process.exit(2);
-}
 
 function unpack(text) {
   try { return JSON.parse(text); } catch {}
@@ -24,23 +19,37 @@ function unpack(text) {
   throw new Error('No JSON-RPC result in response');
 }
 
-async function docsCheck() {
-  const url = 'https://developers.openai.com/mcp';
+export function httpRpc(label, url, fetcher = fetch) {
   let session;
   let id = 0;
-  async function rpc(method, params, notification = false) {
-    const headers = { 'content-type': 'application/json', accept: 'application/json, text/event-stream', 'MCP-Protocol-Version': protocolVersion };
+  let negotiatedVersion = protocolVersion;
+  return async function rpc(method, params, notification = false) {
+    const headers = { 'content-type': 'application/json', accept: 'application/json, text/event-stream', 'MCP-Protocol-Version': negotiatedVersion };
     if (session) headers['Mcp-Session-Id'] = session;
     const body = { jsonrpc: '2.0', method, params };
     if (!notification) body.id = ++id;
-    const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(45000) });
-    if (!response.ok) throw new Error(`Docs MCP HTTP ${response.status}`);
+    let response;
+    try {
+      response = await fetcher(url, { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(45000) });
+    } catch (error) {
+      throw new Error(`${label} MCP transport failed: ${error.message}`);
+    }
+    if (!response.ok) throw new Error(`${label} MCP HTTP ${response.status}${response.status === 429 ? ' (rate limit)' : [401, 403].includes(response.status) ? ' (authentication/access denied)' : ''}`);
     session = response.headers.get('mcp-session-id') ?? session;
     if (notification || response.status === 202) return;
-    const message = unpack(await response.text());
-    if (message.error) throw new Error(`Docs MCP: ${message.error.message}`);
+    let message;
+    try { message = unpack(await response.text()); } catch (error) {
+      throw new Error(`${label} MCP response failed: ${error.message}`);
+    }
+    if (message.error) throw new Error(`${label} MCP: ${message.error.message}`);
+    if (!message.result || typeof message.result !== 'object') throw new Error(`${label} MCP returned no result`);
+    if (method === 'initialize' && message.result.protocolVersion) negotiatedVersion = message.result.protocolVersion;
     return message.result;
-  }
+  };
+}
+
+async function docsCheck() {
+  const rpc = httpRpc('OpenAI Docs', 'https://developers.openai.com/mcp');
   await rpc('initialize', initialize);
   await rpc('notifications/initialized', {}, true);
   const listed = await rpc('tools/list', {});
@@ -49,6 +58,41 @@ async function docsCheck() {
   const result = await rpc('tools/call', { name: search.name, arguments: { query: 'Codex AGENTS.md' } });
   if (result.isError || !result.content?.length) throw new Error('Docs MCP search failed or returned no content');
   console.log(`PASS openai-docs: initialize, ${listed.tools.length} tools, ${search.name} response`);
+}
+
+function toolText(result, name) {
+  const text = (result?.content ?? []).filter(item => item.type === 'text').map(item => item.text).join('\n').trim();
+  if (result?.isError || !text) throw new Error(`Context7 ${name} failed or returned no text`);
+  return text;
+}
+
+export async function context7Check(rpc = httpRpc('Context7', 'https://mcp.context7.com/mcp')) {
+  await rpc('initialize', initialize);
+  await rpc('notifications/initialized', {}, true);
+  const listed = await rpc('tools/list', {});
+  for (const [name, required] of [['resolve-library-id', ['libraryName', 'query']], ['query-docs', ['libraryId', 'query']]]) {
+    const tool = listed.tools?.find(item => item.name === name);
+    if (!tool || !required.every(key => tool.inputSchema?.properties?.[key]?.type === 'string')) {
+      throw new Error(`Context7 ${name} tool/schema missing`);
+    }
+  }
+  const libraries = toolText(await rpc('tools/call', {
+    name: 'resolve-library-id',
+    arguments: { libraryName: 'FastAPI', query: 'Python FastAPI official documentation: declare a request body with Pydantic BaseModel in a POST endpoint.' },
+  }), 'resolve-library-id');
+  // Select the official documentation match returned by the resolver, not a third-party tutorial.
+  const libraryId = '/websites/fastapi_tiangolo';
+  if (!libraries.split(/\r?\n/).some(line => /Context7-compatible library ID:/.test(line) && line.split('Context7-compatible library ID:')[1].trim() === libraryId)) {
+    throw new Error('Context7 did not resolve the official FastAPI documentation library');
+  }
+  const documentation = toolText(await rpc('tools/call', {
+    name: 'query-docs',
+    arguments: { libraryId, query: 'How do I declare a JSON request body with a Pydantic BaseModel in a FastAPI POST endpoint? Include a minimal official example.', language: 'Python' },
+  }), 'query-docs');
+  if (!/https:\/\/fastapi\.tiangolo\.com\//.test(documentation) || !/\bBaseModel\b/.test(documentation)) {
+    throw new Error('Context7 query-docs returned no request-body example with an official FastAPI source');
+  }
+  console.log(`PASS context7: initialize, ${listed.tools.length} tools, resolve-library-id and query-docs with an official FastAPI source`);
 }
 
 async function browserCheck() {
@@ -112,10 +156,22 @@ async function browserCheck() {
   }
 }
 
-try {
-  if (mode !== 'browser') await docsCheck();
-  if (mode !== 'docs') await browserCheck();
-} catch (error) {
-  console.error(`FAIL ${error.message}`);
-  process.exitCode = 1;
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const mode = process.argv[2] ?? 'all';
+  if (!['all', 'docs', 'context7', 'browser'].includes(mode)) {
+    console.error('Usage: node scripts/check_mcp.mjs [all|docs|context7|browser]');
+    process.exitCode = 2;
+  } else {
+    try {
+      if (['all', 'docs'].includes(mode)) await docsCheck();
+      if (['all', 'context7'].includes(mode)) await context7Check();
+      if (['all', 'browser'].includes(mode)) await browserCheck();
+    } catch (error) {
+      console.error(`FAIL ${error.message}`);
+      if (/Context7|OpenAI Docs|Docs MCP/.test(error.message)) {
+        console.error('문서 MCP 연결 실패 시 공식 문서를 직접 확인하세요. 연결 검증은 실패 상태로 남습니다. docs/mcp.md 참고.');
+      }
+      process.exitCode = 1;
+    }
+  }
 }

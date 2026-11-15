@@ -43,12 +43,73 @@ def read_json(path: Path) -> dict:
 
 
 def safe_relative(value: object) -> str:
-    if not isinstance(value, str) or not value or "\\" in value or ":" in value:
+    if not isinstance(value, str) or not value or value == "." or "\\" in value or ":" in value or re.search(r"[\x00-\x1f\x7f]", value):
         raise IntegrityError("lock 파일에 잘못된 상대 경로가 있습니다")
     path = PurePosixPath(value)
     if path.is_absolute() or ".." in path.parts or value != path.as_posix():
         raise IntegrityError("lock 파일의 경로가 스킬 디렉터리 밖을 가리킵니다")
     return value
+
+
+def repository_id(value: object) -> str:
+    if not isinstance(value, str) or value.count("/") != 1:
+        raise IntegrityError("외부 출처 repository는 GitHub owner/repo 형식이어야 합니다")
+    owner, repository = value.split("/")
+    if (len(owner) > 39 or not re.fullmatch(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*", owner)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", repository) or repository in (".", "..")):
+        raise IntegrityError("외부 출처 repository에 안전하지 않은 이름이 있습니다")
+    return value
+
+
+def upstream_path(value: object) -> str:
+    path = safe_relative(value)
+    # Unescaped spaces, query/fragment markers and percent-encoded traversal
+    # must not change the meaning of the pinned GitHub URL we construct.
+    if not re.fullmatch(r"[A-Za-z0-9_./@+~-]+", path):
+        raise IntegrityError("외부 출처 경로에는 URL 해석을 바꾸는 문자를 사용할 수 없습니다")
+    return path
+
+
+def validate_external(entry: dict, name: str, files: dict) -> None:
+    revision = entry.get("revision")
+    if not isinstance(revision, str) or not COMMIT.fullmatch(revision):
+        raise IntegrityError(f"{name}: 외부 스킬은 40자리 커밋 SHA로 고정해야 합니다")
+    repository = repository_id(entry.get("repository"))
+    source_path = upstream_path(entry.get("source_path"))
+    expected_url = f"https://github.com/{repository}/tree/{revision}/{source_path}"
+    if entry.get("source_url") != expected_url:
+        raise IntegrityError(f"{name}: 출처 URL이 repository·커밋·source_path와 일치하지 않습니다")
+    if entry.get("license") not in ("MIT", "Apache-2.0"):
+        raise IntegrityError(f"{name}: 지원하는 외부 라이선스는 MIT와 Apache-2.0입니다")
+    license_file = safe_relative(entry.get("license_file"))
+    if license_file not in files:
+        raise IntegrityError(f"{name}: 선언한 라이선스 파일이 files에 없습니다: {license_file}")
+    prefix = f"https://github.com/{repository}/blob/{revision}/"
+    license_url = entry.get("license_url")
+    if not isinstance(license_url, str) or not license_url.startswith(prefix):
+        raise IntegrityError(f"{name}: 라이선스 URL은 같은 저장소와 커밋의 GitHub blob URL이어야 합니다")
+    upstream_path(license_url[len(prefix):])
+    if entry["origin"] == "vendored":
+        if "adaptations" in entry or "upstream_sha256" in entry:
+            raise IntegrityError(f"{name}: 원본 복사본(vendored)에 수정 기록을 넣을 수 없습니다; adapted를 사용하세요")
+        return
+    adaptations = entry.get("adaptations")
+    upstream_hashes = entry.get("upstream_sha256")
+    if not isinstance(adaptations, dict) or not adaptations:
+        raise IntegrityError(f"{name}: adapted에는 비어 있지 않은 adaptations 수정 기록이 필요합니다")
+    if not isinstance(upstream_hashes, dict) or upstream_hashes.keys() != adaptations.keys():
+        raise IntegrityError(f"{name}: upstream_sha256은 adaptations와 같은 파일 목록을 가져야 합니다")
+    for relative, reason in adaptations.items():
+        safe_relative(relative)
+        if relative not in files:
+            raise IntegrityError(f"{name}: 수정 기록의 파일이 files에 없습니다: {relative}")
+        if not isinstance(reason, str) or not reason.strip():
+            raise IntegrityError(f"{name}: 수정 이유가 필요합니다: {relative}")
+        original = upstream_hashes[relative]
+        if not isinstance(original, str) or not SHA256.fullmatch(original):
+            raise IntegrityError(f"{name}: 수정 파일의 원본 SHA-256이 필요합니다: {relative}")
+        if original == files[relative]:
+            raise IntegrityError(f"{name}: 수정했다고 선언한 파일의 원본과 현재 해시가 같습니다: {relative}")
 
 
 def skill_id(value: object) -> str:
@@ -100,7 +161,9 @@ def directories(path: Path) -> set[str]:
 
 def validate_sources(root: Path) -> dict[str, dict]:
     lock = read_json(root / "skills.lock.json")
-    if lock.get("schema_version") != 1 or not isinstance(lock.get("skills"), list) or not lock["skills"]:
+    if lock.get("schema_version") == 1:
+        raise IntegrityError("skills.lock.json schema 1은 지원하지 않습니다. 외부 출처·라이선스 정보를 추가해 schema_version 2로 갱신하세요")
+    if lock.get("schema_version") != 2 or not isinstance(lock.get("skills"), list) or not lock["skills"]:
         raise IntegrityError("지원하지 않거나 비어 있는 skills.lock.json입니다")
     entries = {}
     for entry in lock["skills"]:
@@ -110,20 +173,17 @@ def validate_sources(root: Path) -> dict[str, dict]:
         if name in entries:
             raise IntegrityError(f"중복 스킬 ID: {name}")
         files = entry.get("files")
-        if not isinstance(files, dict) or not {"SKILL.md", "LICENSE.txt"} <= files.keys():
-            raise IntegrityError(f"{name}: SKILL.md와 LICENSE.txt를 포함한 파일 목록이 필요합니다")
+        if not isinstance(files, dict) or "SKILL.md" not in files:
+            raise IntegrityError(f"{name}: SKILL.md를 포함한 파일 목록이 필요합니다")
         for relative, checksum in files.items():
             safe_relative(relative)
             if not isinstance(checksum, str) or not SHA256.fullmatch(checksum):
                 raise IntegrityError(f"{name}: 올바른 SHA-256이 필요합니다")
-        if entry.get("origin") == "vendored":
-            revision = entry.get("revision")
-            if not isinstance(revision, str) or not COMMIT.fullmatch(revision):
-                raise IntegrityError(f"{name}: 외부 스킬은 커밋 SHA로 고정해야 합니다")
-            expected_url = f"https://github.com/openai/skills/tree/{revision}/skills/.curated/{name}"
-            if entry.get("source_url") != expected_url or entry.get("license") != "Apache-2.0":
-                raise IntegrityError(f"{name}: 외부 스킬 출처나 라이선스가 예상과 다릅니다")
+        if entry.get("origin") in ("vendored", "adapted"):
+            validate_external(entry, name, files)
         elif entry.get("origin") == "first-party":
+            if "LICENSE.txt" not in files:
+                raise IntegrityError(f"{name}: 직접 작성한 스킬은 LICENSE.txt가 필요합니다")
             if entry.get("revision") is not None or entry.get("license") != "MIT":
                 raise IntegrityError(f"{name}: 직접 작성한 스킬의 버전/라이선스를 확인하세요")
             if not isinstance(entry.get("source_url"), str) or not entry["source_url"].startswith("https://github.com/"):
@@ -177,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"무결성 검사 실패: {exc}", file=sys.stderr)
         return 1
     print(f"원본 스킬 {len(entries)}개, 설치 스킬 {count}개: 파일 목록과 SHA-256 일치")
-    print("외부 출처 URL·커밋 형식을 확인했습니다. 원격 내용 재조회는 하지 않았습니다.")
+    print("출처·라이선스·수정 기록의 형식과 로컬 파일 무결성을 확인했습니다. 원격 원문이나 작성자 서명 검증은 아닙니다.")
     return 0
 
 

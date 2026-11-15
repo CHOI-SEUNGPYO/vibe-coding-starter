@@ -2,6 +2,7 @@
 
 import hashlib
 import importlib.util
+import copy
 import json
 import os
 from pathlib import Path
@@ -32,7 +33,18 @@ class SkillIntegrityTests(unittest.TestCase):
         self.write_lock()
 
     def write_lock(self):
-        (self.root / "skills.lock.json").write_text(json.dumps({"schema_version": 1, "skills": [self.entry]}), encoding="utf-8")
+        (self.root / "skills.lock.json").write_text(json.dumps({"schema_version": 2, "skills": [self.entry]}), encoding="utf-8")
+
+    def external(self, origin="vendored", license_name="MIT"):
+        revision = "a" * 40
+        self.entry.update(origin=origin, repository="community-owner/skill-library", source_path="skills/example",
+                          revision=revision, license=license_name, license_file="LICENSE.txt",
+                          source_url=f"https://github.com/community-owner/skill-library/tree/{revision}/skills/example",
+                          license_url=f"https://github.com/community-owner/skill-library/blob/{revision}/LICENSE")
+        if origin == "adapted":
+            self.entry.update(adaptations={"SKILL.md": "Use the project's local command instead of a global path."},
+                              upstream_sha256={"SKILL.md": "b" * 64})
+        self.write_lock()
 
     def install(self):
         (self.root / "profiles").mkdir()
@@ -96,6 +108,139 @@ class SkillIntegrityTests(unittest.TestCase):
         self.entry.update(origin="vendored", revision="a" * 40, license="Apache-2.0")
         self.write_lock()
         with self.assertRaisesRegex(integrity.IntegrityError, "출처"):
+            integrity.validate_sources(self.root)
+
+    def test_community_mit_and_apache_sources_accepted(self):
+        for license_name in ("MIT", "Apache-2.0"):
+            with self.subTest(license=license_name):
+                self.external(license_name=license_name)
+                self.assertIn("example", integrity.validate_sources(self.root))
+
+    def test_license_can_be_preserved_in_upstream_readme(self):
+        self.external()
+        (self.skill / "LICENSE.txt").rename(self.skill / "UPSTREAM_README.md")
+        self.entry["files"]["UPSTREAM_README.md"] = self.entry["files"].pop("LICENSE.txt")
+        self.entry["license_file"] = "UPSTREAM_README.md"
+        self.entry["license_url"] = self.entry["license_url"].removesuffix("LICENSE") + "README.md"
+        self.write_lock()
+        self.assertIn("example", integrity.validate_sources(self.root))
+
+    def test_adapted_source_accepted_and_installed_bytes_checked(self):
+        self.external(origin="adapted")
+        entries = integrity.validate_sources(self.root)
+        self.install()
+        self.assertEqual(integrity.validate_installed(self.root, self.root, entries), 1)
+        (self.root / ".agents/skills/example/SKILL.md").write_text("unrecorded edit", encoding="utf-8")
+        with self.assertRaisesRegex(integrity.IntegrityError, "변경"):
+            integrity.validate_installed(self.root, self.root, entries)
+
+    def test_external_repository_rejects_unsafe_names(self):
+        self.external()
+        for value in ("owner", "owner/repo/extra", "owner@github.com/repo", "owner/repo?x", "owner/..", "../repo", "owner/repo#tag", "-owner/repo", "owner/repo%2fsecret"):
+            with self.subTest(repository=value):
+                self.entry["repository"] = value
+                self.write_lock()
+                with self.assertRaises(integrity.IntegrityError):
+                    integrity.validate_sources(self.root)
+
+    def test_external_paths_reject_traversal_and_url_markers(self):
+        self.external()
+        original = copy.deepcopy(self.entry)
+        for field in ("source_path", "license_file"):
+            for value in ("", ".", "../outside", "/absolute", "a/../b", "a\\b", "a\0b", "https://elsewhere/file"):
+                with self.subTest(field=field, value=value):
+                    self.entry = copy.deepcopy(original)
+                    self.entry[field] = value
+                    self.write_lock()
+                    with self.assertRaises(integrity.IntegrityError):
+                        integrity.validate_sources(self.root)
+        for value in ("skills/example?raw=1", "skills/example#fragment", "skills/%2e%2e/secret", "skills/a b"):
+            with self.subTest(source_path=value):
+                self.entry = copy.deepcopy(original)
+                self.entry["source_path"] = value
+                self.entry["source_url"] = f"https://github.com/{self.entry['repository']}/tree/{self.entry['revision']}/{value}"
+                self.write_lock()
+                with self.assertRaises(integrity.IntegrityError):
+                    integrity.validate_sources(self.root)
+
+    def test_external_source_url_must_match_every_pinned_component(self):
+        self.external()
+        original = self.entry["source_url"]
+        for value in (original.replace("community-owner/", "different-owner/"),
+                      original.replace("a" * 40, "c" * 40), original.replace("/tree/", "/blob/"),
+                      original + "?raw=1", original + "#fragment", original + "/extra",
+                      original.replace("github.com", "github.com@evil.example")):
+            with self.subTest(source_url=value):
+                self.entry["source_url"] = value
+                self.write_lock()
+                with self.assertRaisesRegex(integrity.IntegrityError, "출처 URL"):
+                    integrity.validate_sources(self.root)
+
+    def test_license_url_must_match_repository_commit_and_safe_path(self):
+        self.external()
+        original = self.entry["license_url"]
+        for value in (original.replace("community-owner/", "different-owner/"),
+                      original.replace("a" * 40, "c" * 40), original.replace("/blob/", "/tree/"),
+                      original.replace("github.com", "github.com@evil.example"), original + "?raw=1",
+                      original + "#fragment", original.removesuffix("LICENSE") + "../LICENSE",
+                      original.removesuffix("LICENSE") + "%2e%2e/LICENSE", original.removesuffix("LICENSE")):
+            with self.subTest(license_url=value):
+                self.entry["license_url"] = value
+                self.write_lock()
+                with self.assertRaises(integrity.IntegrityError):
+                    integrity.validate_sources(self.root)
+
+    def test_declared_license_must_be_listed_and_present(self):
+        self.external()
+        self.entry["license_file"] = "UPSTREAM_README.md"
+        self.write_lock()
+        with self.assertRaisesRegex(integrity.IntegrityError, "라이선스 파일"):
+            integrity.validate_sources(self.root)
+        self.entry["files"]["UPSTREAM_README.md"] = "a" * 64
+        self.write_lock()
+        with self.assertRaisesRegex(integrity.IntegrityError, "누락"):
+            integrity.validate_sources(self.root)
+
+    def test_external_unsupported_license_rejected(self):
+        self.external(license_name="Unspecified")
+        with self.assertRaisesRegex(integrity.IntegrityError, "라이선스"):
+            integrity.validate_sources(self.root)
+
+    def test_adaptation_requires_nonempty_reasons_and_known_files(self):
+        self.external(origin="adapted")
+        original = copy.deepcopy(self.entry)
+        for value in ({}, None, {"SKILL.md": ""}, {"SKILL.md": "  "}, {"SKILL.md": 123}, {"missing.md": "Changed command"}):
+            with self.subTest(adaptations=value):
+                self.entry = copy.deepcopy(original)
+                self.entry["adaptations"] = value
+                if isinstance(value, dict):
+                    self.entry["upstream_sha256"] = {key: "b" * 64 for key in value}
+                self.write_lock()
+                with self.assertRaises(integrity.IntegrityError):
+                    integrity.validate_sources(self.root)
+
+    def test_adaptation_requires_original_hashes_for_exactly_changed_files(self):
+        self.external(origin="adapted")
+        for value in (None, {}, {"SKILL.md": "bad"}, {"SKILL.md": "b" * 64, "LICENSE.txt": "c" * 64},
+                      {"LICENSE.txt": "b" * 64}, {"SKILL.md": self.entry["files"]["SKILL.md"]}):
+            with self.subTest(upstream_sha256=value):
+                self.entry["upstream_sha256"] = value
+                self.write_lock()
+                with self.assertRaises(integrity.IntegrityError):
+                    integrity.validate_sources(self.root)
+
+    def test_raw_vendored_cannot_carry_adaptation_fields(self):
+        self.external()
+        for field in ("adaptations", "upstream_sha256"):
+            self.entry[field] = {}
+            self.write_lock()
+            with self.assertRaisesRegex(integrity.IntegrityError, "adapted"):
+                integrity.validate_sources(self.root)
+            del self.entry[field]
+
+    def test_old_schema_requires_explicit_migration(self):
+        (self.root / "skills.lock.json").write_text(json.dumps({"schema_version": 1, "skills": [self.entry]}), encoding="utf-8")
+        with self.assertRaisesRegex(integrity.IntegrityError, "schema_version 2"):
             integrity.validate_sources(self.root)
 
     def test_tampered_installed_copy(self):

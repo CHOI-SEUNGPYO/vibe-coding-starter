@@ -4,13 +4,13 @@
 
 | 프로필 | 이런 작업에 사용 | 포함 스킬 | 활성 MCP | 제품에서 확인할 것 |
 | --- | --- | --- | --- | --- |
-| `minimal` | 작은 버그 수정, CLI, 기존 프로젝트 탐색 | 공통 3종 | 없음 | 변경 전 재현, 변경 후 결과 |
-| `web` | 웹앱, 대시보드, 화면 구현 | 공통 + `playwright`, `gh-fix-ci` | OpenAI Docs, Playwright | 핵심 흐름, 작은 화면, 오류·빈 상태, 접근성 |
-| `api` | 서버, REST API, 외부 API 연결 | 공통 + `gh-fix-ci` | OpenAI Docs | 입력 검증, 권한, 오류 응답, 저장소 통합 |
-| `data` | CSV 처리, 분석, 예측 실험 | 공통 | OpenAI Docs | 스키마, 누락, 데이터 누수, 재현 가능한 지표 |
-| `automation` | 반복 작업, 브라우저 자동화, PR 대응 | 공통 + `gh-address-comments`, `playwright` | OpenAI Docs, Playwright | 미리보기, 재실행, 중간 실패, 결과 확인 |
+| `minimal` | 작은 버그 수정, CLI, 기존 프로젝트 탐색 | 공통 6종 | 없음 | 변경 전 재현, 변경 후 결과 |
+| `web` | 웹앱, 대시보드, 화면 구현 | 공통 + UI UX Pro Max, React 지침, Playwright, CI 처리 | OpenAI Docs, Context7, Playwright | 핵심 흐름, 작은 화면, 오류·빈 상태, 접근성 |
+| `api` | 서버, REST API, 외부 API 연결 | 공통 + API 설계, Postgres 지침, CI 처리 | OpenAI Docs, Context7 | 입력 검증, 권한, 멱등성, 오류 응답, 저장소 통합 |
+| `data` | CSV 처리, 분석, 예측 실험 | 공통 + Python 패턴, Postgres 지침 | OpenAI Docs, Context7 | 스키마, 누락, 데이터 누수, 재현 가능한 지표 |
+| `automation` | 반복 작업, 브라우저 자동화, PR 대응 | 공통 + API 설계, Python 패턴, PR 의견, Playwright | OpenAI Docs, Context7, Playwright | 미리보기, 재실행, 중간 실패, 결과 확인 |
 
-공통 3종은 `task-delivery`, `parallel-work`, `release-check`다. OpenAI Docs는 OpenAI API나 Codex 설정을 조사할 때 사용한다. 일반 라이브러리 문서는 해당 프로젝트의 공식 문서를 확인한다.
+공통 6종은 `task-delivery`, `parallel-work`, `release-check`, `ponytail`, `ponytail-review`, `debugging-and-error-recovery`다. 전부 매번 실행하는 것이 아니라 구현·원인 조사·검토 등 해당 단계에서 사용한다. OpenAI Docs는 OpenAI API·Codex 설정에, Context7은 다른 라이브러리 문서를 찾는 데 사용한다. 기술 스택 지침은 React·Postgres·Python이 실제로 해당될 때만 적용한다. [스킬별 사용 순서와 요청 예시](skill-routing.md)
 
 ## 프로필 적용
 

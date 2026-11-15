@@ -1,7 +1,7 @@
 {
   "name": "data",
   "description": "데이터 정제와 분석에서 재현성, 데이터 분리, 결과 근거를 관리합니다.",
-  "skills": ["task-delivery", "parallel-work", "release-check"],
-  "mcp": ["openai-docs"],
+  "skills": ["task-delivery", "parallel-work", "release-check", "ponytail", "ponytail-review", "debugging-and-error-recovery", "python-patterns", "supabase-postgres-best-practices"],
+  "mcp": ["openai-docs", "context7"],
   "checks": []
 }

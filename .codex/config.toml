@@ -11,6 +11,14 @@ max_concurrent_threads_per_session = 3
 
 # MCP entries are appended from the selected environment profile.
 
+# Optional MCP: context7
+# Public library documentation. Optional account keys are not required by this preset.
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+startup_timeout_sec = 30
+tool_timeout_sec = 60
+
+
 # Optional MCP: openai-docs
 # Official public documentation server. No API key required.
 [mcp_servers.openai-docs]

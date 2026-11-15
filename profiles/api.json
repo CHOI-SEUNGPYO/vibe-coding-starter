@@ -1,7 +1,7 @@
 {
   "name": "api",
   "description": "백엔드/API의 계약, 오류 처리, 권한, 통합 동작을 검증합니다.",
-  "skills": ["task-delivery", "parallel-work", "release-check", "gh-fix-ci"],
-  "mcp": ["openai-docs"],
+  "skills": ["task-delivery", "parallel-work", "release-check", "ponytail", "ponytail-review", "debugging-and-error-recovery", "api-and-interface-design", "supabase-postgres-best-practices", "gh-fix-ci"],
+  "mcp": ["openai-docs", "context7"],
   "checks": []
 }

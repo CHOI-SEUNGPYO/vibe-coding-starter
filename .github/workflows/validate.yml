@@ -34,5 +34,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/test_mcp.mjs
       - run: node node_modules/playwright/cli.js install --with-deps chromium
       - run: node scripts/check_mcp.mjs browser
