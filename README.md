@@ -12,7 +12,7 @@
 
 ### 1. 필요한 프로그램 준비하기
 
-[Git](https://git-scm.com/downloads), [Python **3.11 이상**](https://www.python.org/downloads/), [Node.js **22 이상**](https://nodejs.org/en/download), Codex와 GitHub 계정이 필요합니다. 설치 후 PowerShell을 새로 열고 확인합니다.
+[Git](https://git-scm.com/downloads), [Python **3.11 이상**](https://www.python.org/downloads/), [Node.js **24.x(24.15 이상)**](https://nodejs.org/en/download), Codex와 GitHub 계정이 필요합니다. 설치 후 PowerShell을 새로 열고 확인합니다.
 
 ```powershell
 git --version
@@ -21,7 +21,9 @@ node --version
 npm.cmd --version
 ```
 
-명령을 찾지 못하면 해당 프로그램 설치와 PATH 설정을 확인하세요. Windows에서 `python`이 Microsoft Store를 열거나 동작하지 않으면 `py -3 --version`으로 확인하고, 아래의 `python`을 모두 `py -3`로 바꿔 실행합니다. Windows 예시는 PowerShell의 스크립트 실행 정책에 막히지 않도록 `npm.cmd`를 사용합니다. 실행 정책을 변경할 필요는 없습니다. macOS/Linux에서는 `npm`을 사용하세요. Node.js 22는 이 환경의 최소 조건이며, 새 앱은 선택한 프레임워크가 요구하는 세부 버전도 확인해야 합니다.
+명령을 찾지 못하면 해당 프로그램 설치와 PATH 설정을 확인하세요. `python`이 Microsoft Store를 열거나 동작하지 않으면 `python3 --version`, `py -3 --version` 순서로 확인합니다. **실제로 3.11 이상 버전을 출력하는 명령 하나를 골라 이후에도 같은 명령을 사용하세요.** 예를 들어 `python3`가 동작하면 아래 `python`을 모두 `python3`로 바꿉니다. Python이 설치되어 있어도 `py -3`가 `No installed Python found!`라고 나올 수 있으며, 다른 명령이 정상 동작하면 다시 설치할 필요는 없습니다.
+
+Windows 예시는 PowerShell의 스크립트 실행 정책에 막히지 않도록 `npm.cmd`를 사용합니다. 실행 정책을 변경할 필요는 없습니다. macOS/Linux에서는 `npm`을 사용하세요. **아래 독서 기록 앱 실습은 Node.js 24.22.1에서 확인했으며 24.x 중 24.15 이상을 권장합니다.** starter 자체는 22부터 실행되지만, 앱은 프레임워크와 테스트 도구의 조건을 모두 충족해야 합니다. 예를 들어 [Vite](https://vite.dev/guide/)의 22.12 조건만 보면 이번 앱의 jsdom 테스트 의존성 조건을 놓치게 됩니다. 에이전트가 선택한 실제 의존성의 요구 버전을 함께 확인하도록 요청하세요.
 
 ### 2. 프로젝트용 저장소 만들고 내려받기
 
@@ -57,7 +59,7 @@ python scripts/setup.py --profile web
 web 환경 준비 완료. Codex에서 이 폴더를 신뢰하고 새 채팅을 시작하세요.
 ```
 
-실패하면 마지막 오류를 해결한 뒤 같은 명령을 다시 실행합니다. 예를 들어 Windows의 Python 실행 문제라면 `py -3 scripts/setup.py --profile web`을 사용합니다. Linux에서 브라우저 시스템 라이브러리가 부족하면 안내에 따라 `node node_modules/playwright/cli.js install --with-deps chromium`으로 준비합니다. 연결 오류는 [MCP 문제 해결 안내](docs/mcp.md)를 확인하세요. 이 단계는 개발 환경 준비이며 웹앱은 다음 단계에서 만듭니다.
+실패하면 마지막 오류를 해결한 뒤 같은 명령을 다시 실행합니다. Python 실행 문제라면 1단계에서 확인한 명령을 사용합니다. 예를 들어 `python3 scripts/setup.py --profile web`입니다. Linux에서 브라우저 시스템 라이브러리가 부족하면 안내에 따라 `node node_modules/playwright/cli.js install --with-deps chromium`으로 준비합니다. 연결 오류는 [MCP 문제 해결 안내](docs/mcp.md)를 확인하세요. 이 단계는 개발 환경 준비이며 웹앱은 다음 단계에서 만듭니다.
 
 ### 4. Codex에서 폴더 열기
 
@@ -79,8 +81,11 @@ $task-delivery로 독서 기록 웹앱의 첫 버전을 만들어줘.
 연결이 실패한 도구는 성공했다고 처리하지 말고 원인을 알려줘.
 
 앱은 React + TypeScript + Vite로 apps/web에 만들어줘.
-설치된 Node.js와 프레임워크 버전의 호환성을 먼저 확인하고,
+설치된 Node.js가 프레임워크와 테스트 도구의 요구 버전을 모두 충족하는지 확인하고,
 루트의 MCP용 package.json과 package-lock.json, 설정은 보존해줘.
+명령은 이 컴퓨터에서 실제 동작하는 Python과 패키지 관리자 실행 파일을 써줘.
+앱 의존성의 잠금 파일을 만들고 빌드 산출물과 로컬 시험 자료는 Git에서 제외해줘.
+package.json의 engines와 README의 실행 조건도 실제 의존성 요구 범위에 맞춰줘.
 
 이번에 만들 기능:
 - 책 제목, 저자, 읽는 상태, 메모를 입력해서 저장
@@ -108,12 +113,17 @@ https://www.saasframe.io/ 와 https://mobbin.com/ 에서 접근 가능한
 GitHub Actions에서도 변경된 검사 명령을 실행할 수 있도록
 Node 준비와 앱 의존성 설치 등 필요한 단계를 함께 맞춰줘.
 앱의 dev 명령을 준비하고, 계속 켜 둘 개발 서버는 검사 목록과 별도로 실행해줘.
+서버의 시작 메시지만 보지 말고 실제 주소의 응답과 Playwright 접속을 확인해줘.
+접속이 실패하면 서버 종료·주소·포트·실행 환경의 접근 제한을 구분해 해결하고,
+브라우저 확인을 못 한 상태를 검증 완료로 보고하지 마.
 
 완료 전에 다음을 확인해줘.
 - 책 등록 → 검색 → 수정 → 새로고침 → 삭제
-- 빈 목록, 검색 결과 없음, 잘못된 입력, 저장 실패
+- 빈 목록, 검색 결과 없음, 잘못된 입력, 저장 실패 시 기존 기록·입력 보존
 - 모바일 화면에서 가로 넘침과 주요 버튼 사용
-- 키보드로 입력·저장·대화상자 닫기(대화상자가 있다면)
+- 키보드로 입력·저장하고, 대화상자를 Escape·취소·닫기·저장으로 닫은 뒤
+  원래 버튼으로 포커스가 돌아오는지 확인(대화상자가 있다면)
+- 삭제 확인을 취소한 뒤 해당 삭제 버튼으로 포커스 복귀
 - python scripts/vibe.py verify 실행
 - Playwright로 실제 사용자 흐름 확인
 - Ponytail Review로 변경 검토
@@ -123,7 +133,9 @@ README에 이 앱의 실행·검사 방법을 적어줘.
 이번에는 로컬 구현과 검증까지 진행하고 GitHub push와 서비스 배포는 별도 요청할게.
 ```
 
-`localStorage` 예제의 데이터는 해당 브라우저에만 저장됩니다. 다른 기기와 공유되지 않고, 브라우저 데이터를 지우면 사라질 수 있습니다. 여러 사람이 함께 사용하는 앱은 이후 서버 저장과 인증을 별도 작업으로 추가하세요.
+`localStorage` 예제의 데이터는 해당 브라우저 프로필과 접속 주소에 저장됩니다. 다른 기기와 공유되지 않고, 브라우저 데이터를 지우면 사라질 수 있습니다. **`localhost`와 `127.0.0.1`, 또는 서로 다른 포트는 저장 공간도 다릅니다.** 기록할 때 사용한 주소를 북마크하고 같은 주소로 다시 접속하세요. [저장 범위 설명](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+
+Playwright 검사는 격리된 시험 브라우저에서 실행합니다. 시험 중 넣은 책이 본인의 일반 브라우저에 나타나지 않는 것은 정상입니다. 여러 사람이 함께 사용하는 앱은 이후 서버 저장과 인증을 별도 작업으로 추가하세요.
 
 ### 6. 결과 확인하고 다음 작업 이어가기
 
@@ -138,6 +150,8 @@ npm.cmd --prefix apps/web run dev
 ```powershell
 python scripts/vibe.py verify
 ```
+
+화면이 열리지 않으면 서버 터미널이 여전히 실행 중인지, 접속 주소와 포트가 출력과 같은지 먼저 확인하세요. Codex가 서버를 실행했다면 “서버가 계속 켜져 있고 이 주소에서 실제 페이지가 응답하는지 확인해줘”라고 요청하면 됩니다. 앱은 켜져 있는데 도구만 접속하지 못하는 경우에는 실행 환경의 로컬 접속 권한을 구분해 확인해야 합니다. 전체 방화벽이나 PowerShell 실행 정책을 끄는 방식으로 해결하지 않습니다.
 
 **처음 들어 있는 검사는 starter 자체를 검사합니다.** 첫 작업에서 `.vibe/project.json`에 실제 앱 검사 명령을 등록해야 앱도 검사됩니다. Playwright로 확인한 사용자 흐름과 아직 확인하지 못한 항목도 결과에서 확인하세요. 기존 GitHub Actions도 이 검사 목록을 실행하므로, 앱 검사를 추가할 때 **CI의 Node 준비·앱 의존성 설치 단계도 함께 맞춰야 합니다.** 위 첫 작업 지시에 이 내용이 포함되어 있습니다.
 
