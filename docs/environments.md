@@ -30,7 +30,7 @@ python scripts/vibe.py doctor
 
 `.vibe/project.json`의 목표와 검증 명령을 실제 제품에 맞게 채운다. `checks`가 비어 있으면 제품 검증을 통과한 것으로 취급하지 않는다. 패키지 관리자는 기존 lockfile을 유지하고, 새 프로젝트에서만 팀이 사용할 도구를 정한다.
 
-`checks`의 명령은 문자열 배열로 적고 `timeout_seconds`로 제한 시간을 정한다. `{python}`은 현재 검증 도구를 실행한 Python으로 바뀐다. 제한 시간이 지나면 실행 중인 검사와 그 하위 프로세스를 종료한다. Windows에서는 검사가 정상 종료되어도 같은 작업에 남아 있는 하위 프로세스를 정리하므로, 계속 켜 둘 개발 서버는 검사 목록과 별도로 실행한다. 이 실행기는 신뢰하는 프로젝트 검사를 실행하는 도구이며 임의 코드를 격리하는 보안 경계가 아니다.
+`checks`의 명령은 문자열 배열로 적고 `timeout_seconds`로 제한 시간을 정한다. `{python}`은 기본적으로 현재 검증 도구를 실행한 Python이며, 아래 `venv`를 지정하면 앱의 가상환경 Python으로 바뀐다. 제한 시간이 지나면 실행 중인 검사와 그 하위 프로세스를 종료한다. Windows에서는 검사가 정상 종료되어도 같은 작업에 남아 있는 하위 프로세스를 정리하므로, 계속 켜 둘 개발 서버는 검사 목록과 별도로 실행한다. 이 실행기는 신뢰하는 프로젝트 검사를 실행하는 도구이며 임의 코드를 격리하는 보안 경계가 아니다.
 
 Windows의 `npm` 같은 `.cmd`·`.bat` 실행 파일은 운영체제가 명령 해석기를 거친다. 예기치 않은 명령 연결·변수 치환을 막기 위해 이 형식의 실행 경로·인수에 `& | < > ^ % ! ( ) "` 또는 줄바꿈이 있으면 거부한다. 해당 문자가 필요한 검사는 `node`나 Python으로 실제 스크립트를 직접 실행한다. 일반 `npm test`처럼 특수문자가 없는 명령은 실행 파일을 찾아 처리한다.
 
@@ -43,6 +43,28 @@ Windows의 `npm` 같은 `.cmd`·`.bat` 실행 파일은 운영체제가 명령 �
 | 최소 환경 | 대상 언어 런타임만 | 실패 재현과 변경된 동작 검사 |
 
 데이터 프로필에서 회사 원본·개인정보·비공개 자료를 저장소에 넣지 않는다. 분석은 원본을 읽고 별도 결과를 만들도록 구성하며, 학습·평가 데이터를 나눈 근거를 남긴다. 자동화는 읽기 작업을 먼저 확인한 뒤, 사용자가 요청한 쓰기 작업만 수행한다.
+
+### Python 앱의 가상환경 연결
+
+Python API·데이터 앱의 패키지는 별도 가상환경에 설치한다. starter를 실행하는 Python과 앱의 Python은 다를 수 있다. `.vibe/project.json`의 `checks` 배열에 다음처럼 **실제 앱 검사**를 추가한다. 테스트 경로와 명령은 만든 앱에 맞춘다.
+
+```json
+{
+  "name": "API 계약·저장·인증",
+  "cwd": "apps/api",
+  "venv": ".venv",
+  "command": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-v"],
+  "timeout_seconds": 60
+}
+```
+
+- `cwd`는 저장소 루트 기준, `venv`는 **그 `cwd` 기준 상대 경로**다. 위 설정은 `apps/api/.venv`를 가리킨다. 다른 이름도 지정할 수 있다.
+- `venv`를 지정한 명령의 첫 항목은 정확히 `{python}`이어야 한다. Windows에서는 `Scripts/python.exe`, macOS/Linux에서는 `bin/python`을 찾아 실행하므로 OS 경로를 검사 명령에 고정하지 않는다.
+- `python -m venv apps/api/.venv`로 먼저 만들고, 그 가상환경의 Python으로 앱 의존성을 설치한다. 가상환경 활성화나 `Activate.ps1` 실행 정책 변경은 필요 없다. [Python 공식 venv 안내](https://docs.python.org/3/library/venv.html)
+- 가상환경의 `pyvenv.cfg`·실행 파일이 없거나 경로가 잘못되면 **어떤 검사도 실행하기 전에 실패**한다. 기본 Python으로 조용히 바꾸지 않는다. `.venv` 자체를 링크로 연결하지 않으며, POSIX 가상환경의 표준 `bin/python` 링크는 지원한다.
+- `venv`를 생략한 기존 `{python}` 명령은 그대로 동작한다. Python이 아닌 검사는 기존 `node`·`npm` 등의 실행 명령을 유지한다.
+
+이후에는 저장소 루트에서 `python scripts/vibe.py verify` 하나로 검사한다. CI도 **현재 프로필 check → 런타임·가상환경 준비 → 앱 잠금 의존성 설치 → verify** 순으로 맞춘다. starter의 CI는 현재 프로필을 바꾸지 않지만 새 앱의 패키지 설치까지 자동으로 추론하지는 않는다. 새 앱을 추가한 작업에서 CI도 수정해야 한다. 서버를 계속 켜는 명령은 검사 목록에 넣지 않는다.
 
 ## 목적별 레퍼런스와 작업 방법
 
@@ -71,7 +93,11 @@ Playwright로 좁은 화면, 키보드 탐색, 검색 결과 없음, 저장 실�
 
 ### `api` — 계약과 오류 처리
 
-[OpenAPI 공식 문서](https://spec.openapis.org/)를 기준으로 요청·응답·인증 계약을 먼저 적고, [Swagger UI](https://swagger.io/open-source/swagger-ui/)에서 API 문서를 보여 주는 방식을 참고한다. 실제 프로젝트가 지원하는 명세 버전을 따른다. 서버만 만드는 작업에 화면 디자인을 억지로 추가하지 않는다. 관리자 화면도 필요하면 웹 레퍼런스를 함께 쓰고 `--mcp playwright`를 추가한다.
+[OpenAPI 공식 문서](https://spec.openapis.org/)를 기준으로 요청·응답·인증 계약을 먼저 적고, [Swagger UI](https://swagger.io/open-source/swagger-ui/)와 [Petstore 예제](https://petstore.swagger.io/)에서 API 문서를 보여 주는 방식을 참고한다. 실제 프로젝트가 지원하는 명세 버전을 따른다. FastAPI를 선택하면 [시작 안내](https://fastapi.tiangolo.com/tutorial/first-steps/)와 [TestClient 검사 안내](https://fastapi.tiangolo.com/tutorial/testing/)를 설치 버전에 맞춰 확인한다.
+
+처음 시작하는 전체 명령과 완성된 독서 기록 API 지시는 [README API 시작 순서](../README.md#api-개발로-시작하기), 다른 요구사항을 채울 양식은 [API 첫 작업 지시](../templates/first-api-task.md)에 있다. `python scripts/setup.py --profile api`는 스킬 9종과 문서 MCP 2개를 준비한다. Node22 이상은 MCP 검사에 쓰이며 앱의 런타임·DB·의존성은 별도로 준비한다. SQLite 예제에 Postgres 전문 지침을 억지로 적용하지 않는다.
+
+서버만 만드는 작업은 실제 HTTP·계약·저장소 통합 검사로 검증한다. 화면 디자인과 Playwright는 필요하지 않다. 관리자 화면도 필요하면 웹 레퍼런스를 함께 쓰고 [MCP 안내](mcp.md)에 따라 브라우저 연결과 의존성을 추가한다. 단일 개인 토큰에는 사용자별 권한을 보장한다고 쓰지 않고, 다중 사용자라면 타 사용자 데이터 접근도 검사한다. DB 쓰기 실패와 **실제 프로세스 재시작 후 저장 보존**을 확인하고, POST·PATCH·DELETE의 재시도 정책을 각각 정한다.
 
 ```text
 요청 생성·조회 API를 구현해줘. https://spec.openapis.org/ 의 명세 구조를

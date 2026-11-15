@@ -8,7 +8,7 @@
 
 ## 바로 시작하기
 
-아래는 **Windows에서 독서 기록 웹앱을 처음 만드는 순서**입니다. 환경을 준비한 뒤 첫 작업 지시를 복사해 Codex에 보내면 됩니다. 직접 원하는 앱으로 시작하려면 [첫 작업 지시 양식](templates/first-task.md)의 빈칸을 채우세요.
+아래는 **Windows에서 독서 기록 웹앱을 처음 만드는 순서**입니다. 서버만 만들려면 [API 개발로 시작하기](#api-개발로-시작하기)로 이동하세요. 원하는 앱으로 시작하려면 [웹앱 첫 작업 양식](templates/first-task.md) 또는 [API 첫 작업 양식](templates/first-api-task.md)의 빈칸을 채우세요.
 
 ### 1. 필요한 프로그램 준비하기
 
@@ -157,11 +157,137 @@ python scripts/vibe.py verify
 
 이후에는 “책 목록에 표지 이미지를 추가해줘”처럼 원하는 변경을 말하면 됩니다. 같은 프로젝트에서 매번 환경을 다시 설치할 필요는 없습니다. 새 컴퓨터에서 복원할 때는 `python scripts/setup.py`를 실행하면 현재 프로필을 유지합니다. 만든 앱의 의존성은 별도로 복원합니다. 이 예시처럼 npm 잠금 파일을 사용하는 앱이라면 Windows에서 `npm.cmd --prefix apps/web ci`, macOS/Linux에서 `npm --prefix apps/web ci`를 실행합니다.
 
+## API 개발로 시작하기
+
+웹 화면 없이 **독서 기록을 저장하고 조회하는 API**를 만드는 순서입니다. 아래 단계는 별도 복제본에 `api` 프로필을 적용해 FastAPI + SQLite로 실제 구현·검증했습니다. 예제 앱은 starter에 들어 있지 않으며, 3단계의 지시로 새로 만듭니다.
+
+### 1. 프로그램 준비와 프로젝트 복제
+
+[Git](https://git-scm.com/downloads), [Python 3.11 이상](https://www.python.org/downloads/), [Node.js 22 이상](https://nodejs.org/en/download), Codex와 GitHub 계정을 준비합니다. **여기서 Node는 문서 MCP 연결 검사에 사용합니다.** Python API를 실행하는 런타임과는 별개이며, 웹 실습의 Vite·jsdom 버전 조건은 적용하지 않습니다. PowerShell에서 `git --version`, `python --version`, `node --version`으로 확인하세요. Python 명령이 안 되면 [웹 안내의 1단계](#1-필요한-프로그램-준비하기)처럼 실제 동작하는 실행 파일을 고릅니다.
+
+이 저장소를 **Use this template** 또는 **Fork**로 본인 계정에 가져옵니다. 여러 프로젝트를 따로 만들 때는 Template을 권장합니다. 이름을 `reading-api`로 정했다면, `YOUR-ACCOUNT`를 본인 계정으로 바꾸고 실행합니다.
+
+```powershell
+cd "$env:USERPROFILE\Documents"
+git clone https://github.com/YOUR-ACCOUNT/reading-api.git
+cd .\reading-api
+python scripts/setup.py --profile api
+```
+
+이후 명령은 저장소 루트에서 실행합니다. 준비가 끝나면 `api 환경 준비 완료`가 표시됩니다. API 설계·Ponytail·리뷰 등을 포함한 **스킬 9종**, **OpenAI Docs와 Context7**이 적용됩니다. API 프로필은 Playwright·Chromium을 설치하지 않습니다. Python 프레임워크·DB·가상환경은 다음 작업에서 만듭니다. MCP 조회 실패는 [문제 해결 안내](docs/mcp.md)를 확인한 뒤 같은 명령으로 다시 검사하세요.
+
+### 2. Codex에서 프로젝트 열기
+
+`reading-api` **루트 폴더**를 열고 프로젝트 설정을 확인한 뒤 신뢰하고 새 채팅을 시작합니다. 기존 웹 작업의 채팅을 계속 쓰는 대신 새 프로필을 읽게 합니다. `.agents/skills`와 `.codex`는 이미 준비되어 있습니다. SQLite 예제에는 Postgres 연결이나 별도 클라우드 계정이 필요하지 않습니다.
+
+### 3. 첫 작업 지시 보내기
+
+아래를 **Codex 채팅**에 붙여 넣습니다. 다른 API는 [API 전용 첫 작업 양식](templates/first-api-task.md)을 사용하세요. 레퍼런스는 [OpenAPI](https://spec.openapis.org/)의 계약 구조, [Swagger Petstore](https://petstore.swagger.io/)의 요청·응답 표현, [FastAPI 문서](https://fastapi.tiangolo.com/tutorial/first-steps/)의 실제 실행 방식을 비교하는 데 씁니다.
+
+```text
+$task-delivery로 개인용 독서 기록 API를 구현하고 검증해줘.
+
+AGENTS.md, docs/environments.md, docs/skill-routing.md를 읽고
+api 프로필과 OpenAI Docs·Context7 연결을 확인해줘.
+API 설계와 Ponytail을 적용하고 마지막에는 Ponytail Review로 검토해줘.
+
+Python + FastAPI + SQLite로 apps/api에 만들어줘.
+제목·저자·상태(want/reading/done)·메모를 저장하고,
+POST /api/books, GET 목록·상세, PATCH 부분 수정, DELETE를 제공해줘.
+제목·저자 검색, 상태 필터, page와 pageSize 페이지 조회도 포함해줘.
+입력 조건, 상태코드, 공통 오류 본문, 인증을 OpenAPI와 README에 명시해줘.
+https://spec.openapis.org/ 와 https://petstore.swagger.io/ 를 참고하되
+설치한 FastAPI가 지원하는 명세 버전을 사용해줘.
+
+책 API는 개인용 Bearer 토큰으로 보호해줘. 사용자 역할 구분은 없어.
+BOOKS_API_TOKEN은 무작위로 만들어 Git에서 제외한 apps/api/.env에 저장하고,
+기존 파일을 덮어쓰거나 토큰을 답변·로그에 출력하지 마.
+서버 토큰 미설정은503, 요청 토큰 누락·오류는401로 거절해줘.
+DB는 apps/api/data/books.sqlite3에 저장하고 실행 위치·재시작과 무관하게 유지해줘.
+PATCH는 생략 필드를 유지하고 null은 거절해줘. 반복 삭제는204로 해줘.
+POST는 비멱등으로 명시하고 자동 재시도하지 않도록 안내해줘.
+회원가입, 웹 화면, 외부 도서 검색, 외부 공개와 운영 배포는 제외해줘.
+
+앱 전용 apps/api/.venv와 requirements.lock을 만들고 실제 의존성을 설치해줘.
+전역 패키지·실행 정책을 바꾸지 말고 가상환경 Python을 직접 사용해줘.
+루트 MCP용 package.json·잠금 파일·설정은 보존하고 .env·DB·.venv는 Git에서 제외해줘.
+설치한 라이브러리와 테스트 도구의 런타임 조건을 공식 문서로 확인해줘.
+
+.vibe/project.json을 이 앱의 목표와 완료 조건으로 갱신해줘.
+실제 앱 검사는 cwd:"apps/api", venv:".venv", command:["{python}", ...]로 등록해줘.
+CI도 현재 프로필 check → 가상환경 생성 → 잠금 의존성 설치 → verify로 맞춰줘.
+CI에서 web 프로필을 다시 적용하지 마. 앱 검사는 임시 DB와 시험용 토큰을 사용해줘.
+
+인증 후 등록 → 검색 → 부분 수정 → 서버 종료·재시작 → 다시 조회 → 삭제를 확인해줘.
+한글·이모지, 잘못된 타입·길이·공백·NUL·null, 알 수 없는 필드, 없는 ID,
+인증 누락·오류·설정 누락, 페이지 경계, 중복 요청 정책도 검사해줘.
+실제 DB 쓰기 실패를 재현하고 기존 데이터가 보존되는지 확인해줘.
+python scripts/vibe.py verify와 별도 실제 HTTP 검사를 모두 실행해줘.
+검사가 멈추면 코드 오류와 DNS·로컬 소켓·포트 제한을 구분하고 실패를 숨기지 마.
+
+서버는 검사 목록과 별도로 127.0.0.1:8001에서 실행해줘.
+/health, /docs, /openapi.json과 실제 인증·CRUD 요청이 응답하는지 확인해줘.
+화면이 없는 API에는 브라우저 검사를 필수로 추가하지 마.
+README에 OS별 실행·검사·인증 명령과 HTTP 예시, DB 위치를 적어줘.
+마지막에 실제 접속 주소·통과한 검사·남은 제한을 알려줘.
+이번에는 로컬 구현·검증까지 진행하고 GitHub push와 배포는 별도 요청할게.
+```
+
+### 4. 서버 실행과 첫 요청
+
+**3단계에서 코드·의존성·`.env`를 만든 뒤** 사용할 명령입니다. Codex가 서버를 켜 두었다면 같은 포트로 또 실행하지 말고 아래 주소부터 확인하세요. 다시 켤 때는 루트에서 실행하고 터미널을 유지합니다.
+
+```powershell
+apps/api/.venv/Scripts/python.exe -m uvicorn main:app --app-dir apps/api --env-file apps/api/.env --host 127.0.0.1 --port 8001
+```
+
+macOS/Linux는 실행 파일을 `apps/api/.venv/bin/python`으로 바꿉니다. [API 문서](http://127.0.0.1:8001/docs)에서 **Authorize**에 `.env`의 로컬 토큰 값을 넣으면 책 API를 호출할 수 있습니다. `BOOKS_API_TOKEN=`이나 `Bearer ` 접두사는 입력하지 않습니다. `.env`는 본인 컴퓨터의 편집기에서만 확인하고 채팅·GitHub에 복사하지 않습니다.
+
+PowerShell에서 직접 호출하려면 **다른 터미널을 열어 같은 저장소 루트로 이동**한 뒤 아래를 실행합니다. 토큰은 파일에서 읽어 헤더에 넣고 출력하지 않습니다. 한국어 본문은 UTF-8 바이트로 보냅니다.
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8001/health
+$apiToken = ((Get-Content apps/api/.env | Select-String '^BOOKS_API_TOKEN=').Line -replace '^BOOKS_API_TOKEN=', '').Trim()
+$apiHeaders = @{ Authorization = "Bearer $apiToken" }
+$apiBody = @{ title = '어린 왕자'; author = '생텍쥐페리'; status = 'reading'; note = '첫 기록' } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8001/api/books -Headers $apiHeaders -ContentType 'application/json; charset=utf-8' -Body ([System.Text.Encoding]::UTF8.GetBytes($apiBody))
+Invoke-RestMethod -Uri http://127.0.0.1:8001/api/books -Headers $apiHeaders
+```
+
+인증 없이 책 주소를 열면 **401**이 정상입니다. **503**이면 서버 토큰이 설정됐는지와 `--env-file` 경로를 확인합니다. `/health`의 성공은 DB 연결 확인이며 토큰 설정과 쓰기 성공까지 보장하지 않습니다. POST를 반복하면 책이 중복 등록되므로 응답을 못 받은 경우 먼저 목록을 확인하세요.
+
+### 5. 검증과 다음 실행
+
+```powershell
+python scripts/vibe.py verify
+```
+
+`.vibe/project.json`에 등록한 앱 검사는 `venv` 설정 덕분에 앱의 Python으로 실행됩니다. 가상환경을 활성화할 필요가 없습니다. 기본 Python의 `ModuleNotFoundError`를 해결하려고 전역에 패키지를 설치하지 말고 [가상환경 검사 설정](docs/environments.md#python-앱의-가상환경-연결)을 확인하세요.
+
+서버 터미널에서 `Ctrl+C`로 종료하고 4단계 명령으로 다시 켠 뒤 목록을 조회하면 같은 DB의 기록이 남아 있어야 합니다. 가상환경과 DB는 별개입니다. **새 컴퓨터에 clone하면 Git에서 제외한 DB와 토큰은 따라오지 않습니다.** 서버 재시작 보존과 다른 컴퓨터로의 데이터 이전을 구분하세요.
+
+새 컴퓨터에서는 `python scripts/setup.py`로 현재 프로필을 복원한 뒤, 앱 의존성을 별도로 준비합니다. 다음은 위 예시가 만들어진 프로젝트의 Windows 명령입니다.
+
+```powershell
+python -m venv apps/api/.venv
+apps/api/.venv/Scripts/python.exe -m pip install -r apps/api/requirements.lock
+```
+
+macOS/Linux는 `python3 -m venv apps/api/.venv`, `apps/api/.venv/bin/python -m pip install -r apps/api/requirements.lock`을 사용합니다. 위 예시의 새 로컬 토큰 파일은 다음처럼 만듭니다. 토큰은 출력하지 않으며 기존 `.env`가 있으면 덮어쓰지 않고 실패합니다. 처음 구현하면서 이미 만들었다면 다시 실행하지 않습니다.
+
+```powershell
+python -c "from pathlib import Path; import secrets; Path('apps/api/.env').open('x', encoding='utf-8').write('BOOKS_API_TOKEN=' + secrets.token_urlsafe(32) + '\nBOOKS_DB_PATH=data/books.sqlite3\n')"
+```
+
+macOS/Linux는 `python`을 `python3`로 바꿉니다. 설정 이름을 변경한 앱은 그 앱의 README와 `.env.example`을 따르세요. DB를 옮길 경우 별도 백업·복원 절차를 따릅니다. 기존 DB나 `.env`를 초기화하지 마세요.
+
+이 검증 예제는 한 사람의 로컬 API입니다. 다중 사용자 권한·외부 공개·TLS·운영 백업은 이후 별도 요구사항으로 추가합니다. 실제로 실행한 검사와 제한은 [검증 기록](docs/verification.md#api-프로필-실제-앱-검증-2026-11-16)에 있습니다.
+
 ## 내 프로젝트의 첫 작업 지시 작성하기
 
-[첫 작업 지시 양식](templates/first-task.md)을 열고 프로젝트명·목적·사용자·핵심 기능·데이터 저장·디자인·완료 조건을 채운 뒤 Codex에 보냅니다. 잘 모르는 기술 선택은 “추천해줘”로 남겨도 됩니다. 원하는 결과와 이번에 하지 않을 범위를 적으면 첫 작업의 크기를 정하기 쉽습니다.
+[웹앱 양식](templates/first-task.md) 또는 [API 양식](templates/first-api-task.md)을 열고 목적·사용자·기능·데이터·완료 조건을 채운 뒤 Codex에 보냅니다. 웹은 화면·사용 흐름, API는 인증·입출력·오류·재시도 계약을 적습니다. 잘 모르는 기술 선택은 “추천해줘”로 남겨도 됩니다.
 
-웹앱은 위 예시를 그대로 시작점으로 사용할 수 있습니다. 다른 목적은 [환경 사용 가이드](docs/environments.md)의 프로필을 먼저 적용하고, 양식의 앱 경로와 검증 항목을 해당 프로젝트에 맞게 바꿉니다.
+웹앱과 API는 위의 완성된 첫 지시를 시작점으로 사용할 수 있습니다. 다른 목적은 [환경 사용 가이드](docs/environments.md)의 프로필을 먼저 적용하고, 양식의 앱 경로와 검증 항목을 해당 프로젝트에 맞게 바꿉니다.
 
 ## 목적별로 어떻게 쓰나요?
 

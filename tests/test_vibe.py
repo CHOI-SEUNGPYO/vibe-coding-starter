@@ -13,6 +13,7 @@ import tempfile
 import time
 import unittest
 from unittest.mock import patch
+import venv
 
 SPEC = importlib.util.spec_from_file_location("vibe", Path(__file__).resolve().parents[1] / "scripts" / "vibe.py")
 vibe = importlib.util.module_from_spec(SPEC)
@@ -262,6 +263,90 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertEqual((self.target / "verified.txt").read_text(), "ok")
         self.assertIn("종료 코드 7", output)
+
+    def test_verify_uses_explicit_venv_and_preserves_default_python(self):
+        self.install()
+        cwd = self.target / "apps/api"
+        checks = []
+        for folder in (".venv", "custom-python-env"):
+            environment = cwd / folder
+            venv.EnvBuilder(with_pip=False, symlinks=os.name != "nt").create(environment)
+            interpreter = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+            if os.name != "nt":
+                self.assertTrue(interpreter.is_symlink(), "exercise normal POSIX venv symlinks")
+            package_dir = subprocess.run(
+                [str(interpreter), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+                capture_output=True, text=True, check=True,
+            ).stdout.strip()
+            self.write(Path(package_dir) / "vibe_venv_only_test_marker.py", f"VALUE = {folder!r}\n")
+            checks.append({"name": folder, "cwd": "apps/api", "venv": folder, "command": [
+                "{python}", "-c",
+                "import json, sys, vibe_venv_only_test_marker as marker; from pathlib import Path; "
+                f"Path({folder + '-result.json'!r}).write_text(json.dumps({{'marker': marker.VALUE, 'prefix': sys.prefix}}))",
+            ]})
+        checks.append({"name": "default Python", "cwd": "apps/api", "command": [
+            "{python}", "-c", "import json, sys; from pathlib import Path; "
+            "Path('default-result.json').write_text(json.dumps({'prefix': sys.prefix, 'executable': sys.executable}))",
+        ]})
+        self.write_json(self.target / ".vibe/project.json", {"checks": checks})
+        code, output = self.run_cli("verify")
+        self.assertEqual(code, 0, output)
+        for folder in (".venv", "custom-python-env"):
+            with self.subTest(venv=folder):
+                result = json.loads((cwd / f"{folder}-result.json").read_text())
+                self.assertEqual(result["marker"], folder)
+                self.assertEqual(Path(result["prefix"]), cwd / folder)
+        default = json.loads((cwd / "default-result.json").read_text())
+        self.assertEqual(Path(default["prefix"]), Path(sys.prefix))
+        self.assertEqual(Path(default["executable"]), Path(sys.executable))
+
+    def test_invalid_venv_checks_fail_before_any_command_runs(self):
+        self.install()
+        cwd = self.target / "apps/api"
+        self.write(cwd / "incomplete/pyvenv.cfg", f"home = {sys.base_prefix}\n")
+        binary = "Scripts/python.exe" if os.name == "nt" else "bin/python"
+        self.write(cwd / "missing-config" / binary, "not an interpreter")
+        cases = [
+            ({"venv": value}, "venv") for value in (None, False, 17, [], {}, "")
+        ] + [
+            ({"venv": value}, "상대 경로")
+            for value in ("../outside", "/absolute", "C:/absolute", ".venv\\bin")
+        ] + [
+            ({"venv": value}, "가상환경을 생성하고 프로젝트 의존성을 설치")
+            for value in (".venv", "incomplete", "missing-config")
+        ] + [
+            ({"venv": ".venv", "command": [value, "-V"]}, "정확히 {python}")
+            for value in (sys.executable, "python", "{pyhton}")
+        ]
+        for invalid, message in cases:
+            with self.subTest(invalid=invalid):
+                self.write_json(self.target / ".vibe/project.json", {"checks": [
+                    {"name": "must not run", "command": ["{python}", "-c",
+                        "from pathlib import Path; Path('should-not-exist').touch()"]},
+                    {"name": "invalid venv", "cwd": "apps/api", "command": ["{python}", "-V"], **invalid},
+                ]})
+                code, output = self.run_cli("verify")
+                self.assertEqual(code, 1, output)
+                self.assertIn(message, output)
+                self.assertFalse((self.target / "should-not-exist").exists())
+
+    def test_verify_rejects_symlinked_venv_directory(self):
+        self.install()
+        actual = self.temp_root / "outside-environment"
+        actual.mkdir()
+        try:
+            (self.target / ".venv").symlink_to(actual, target_is_directory=True)
+        except OSError:
+            self.skipTest("OS does not permit test symlinks")
+        self.write_json(self.target / ".vibe/project.json", {"checks": [
+            {"name": "must not run", "command": ["{python}", "-c",
+                "from pathlib import Path; Path('should-not-exist').touch()"]},
+            {"name": "linked venv", "venv": ".venv", "command": ["{python}", "-V"]},
+        ]})
+        code, output = self.run_cli("verify")
+        self.assertEqual(code, 1, output)
+        self.assertIn("심볼릭 링크", output)
+        self.assertFalse((self.target / "should-not-exist").exists())
 
     def test_verify_timeout_and_missing_command_fail(self):
         self.install()

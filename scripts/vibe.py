@@ -384,12 +384,29 @@ def validate_checks(target: Path) -> list[tuple[str, list[str], Path, float]]:
             raise VibeError(f"checks[{index}].name이 필요합니다.")
         if not isinstance(command, list) or not command or any(not isinstance(arg, str) or not arg or "\0" in arg for arg in command):
             raise VibeError(f"검사 {name}: command는 비어 있지 않은 문자열 배열이어야 합니다.")
-        if command[0] == "{python}":
-            command = [sys.executable, *command[1:]]
         relative = entry.get("cwd", ".")
         cwd = target_path(target, relative)
         if not cwd.is_dir():
             raise VibeError(f"검사 {name}: 작업 폴더가 없습니다: {relative}")
+        python = sys.executable
+        if "venv" in entry:
+            if not isinstance(entry["venv"], str) or not entry["venv"]:
+                raise VibeError(f"검사 {name}: venv는 작업 폴더 기준의 비어 있지 않은 상대 경로여야 합니다.")
+            if command[0] != "{python}":
+                raise VibeError(f"검사 {name}: venv를 지정하면 command의 첫 항목은 정확히 {{python}}이어야 합니다.")
+            environment = target_path(cwd, entry["venv"])
+            config = target_path(environment, "pyvenv.cfg")
+            binaries = target_path(environment, "Scripts" if os.name == "nt" else "bin")
+            # POSIX venv interpreters normally symlink to the base Python. Keep
+            # this path intact so Python discovers the venv's pyvenv.cfg.
+            interpreter = binaries / ("python.exe" if os.name == "nt" else "python")
+            if not environment.is_dir() or not config.is_file() or not interpreter.is_file():
+                raise VibeError(f"검사 {name}: 가상환경이 준비되지 않았습니다: {environment}. "
+                                "이 위치에 Python 가상환경을 생성하고 프로젝트 의존성을 설치하세요. "
+                                f"필요한 파일: pyvenv.cfg, {interpreter.relative_to(environment)}")
+            python = str(interpreter)
+        if command[0] == "{python}":
+            command = [python, *command[1:]]
         timeout = entry.get("timeout_seconds", 300)
         if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not 0 < timeout <= 86400:
             raise VibeError(f"검사 {name}: timeout_seconds는 0 초과 86400 이하의 수여야 합니다.")
