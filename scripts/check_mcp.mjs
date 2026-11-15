@@ -73,10 +73,10 @@ async function browserCheck() {
     waiting.delete(message.id); clearTimeout(entry.timer);
     if (message.error) entry.reject(new Error(message.error.message)); else entry.resolve(message.result);
   });
-  async function rpc(method, params) {
+  async function rpc(method, params, timeoutMs = 60000) {
     const id = ++sequence;
     return new Promise((resolveResult, reject) => {
-      const timer = setTimeout(() => { waiting.delete(id); reject(new Error(`Playwright MCP timeout: ${method}`)); }, 60000);
+      const timer = setTimeout(() => { waiting.delete(id); reject(new Error(`Playwright MCP timeout: ${method}`)); }, timeoutMs);
       waiting.set(id, { resolve: resolveResult, reject, timer });
       child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
     });
@@ -103,8 +103,10 @@ async function browserCheck() {
     const clicked = await rpc('tools/call', { name: 'browser_click', arguments: { target: ref } });
     if (!(await snapshotText(clicked)).includes('Clicked')) throw new Error('Browser button click did not update the page');
     console.log(`PASS playwright: initialize, ${listed.tools.length} tools, Chromium navigation and button click`);
-    await rpc('tools/call', { name: 'browser_close', arguments: {} });
   } finally {
+    if (child.exitCode === null && !child.killed) {
+      await rpc('tools/call', { name: 'browser_close', arguments: {} }, 5000).catch(() => {});
+    }
     child.stdin.end(); child.kill(); lines.close(); failPending(new Error('MCP check ended'));
     await new Promise(done => server.close(done));
   }
