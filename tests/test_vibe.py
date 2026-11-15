@@ -22,8 +22,11 @@ SPEC.loader.exec_module(vibe)
 class InstallerTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
-        self.root = Path(self.temporary.name) / "kit"
-        self.target = Path(self.temporary.name) / "project"
+        # macOS's standard /var temp prefix is itself an OS symlink. Resolve
+        # that baseline before constructing the deliberate link test cases.
+        self.temp_root = Path(self.temporary.name).resolve()
+        self.root = self.temp_root / "kit"
+        self.target = self.temp_root / "project"
         self.root.mkdir()
         self.write(self.root / "templates/AGENTS.md", "# Project guidance\n")
         self.write(self.root / "config/codex.base.toml", 'sandbox_mode = "workspace-write"\n')
@@ -68,7 +71,7 @@ class InstallerTests(unittest.TestCase):
     def test_all_profiles_install_and_default_mcp_matches_selection(self):
         for profile in ("minimal", "web", "api", "data", "automation"):
             with self.subTest(profile=profile):
-                self.target = Path(self.temporary.name) / profile
+                self.target = self.temp_root / profile
                 self.install(profile)
                 state = json.loads((self.target / ".vibe/profile.json").read_text())
                 self.assertEqual(state["profile"], profile)
@@ -81,6 +84,37 @@ class InstallerTests(unittest.TestCase):
         self.install("web", "--no-mcp", "--mcp", "browser")
         config = vibe.inspect_config(self.target)
         self.assertEqual(list(config["mcp_servers"]), ["browser"])
+
+    def test_init_and_error_output_are_utf8_with_legacy_stream_encoding(self):
+        script = self.root / "scripts/vibe.py"
+        script.parent.mkdir()
+        shutil.copyfile(SPEC.origin, script)
+        for encoding in ("ascii", "cp1252"):
+            with self.subTest(encoding=encoding):
+                environment = {**os.environ, "PYTHONIOENCODING": encoding}
+                result = subprocess.run(
+                    [sys.executable, str(script), "init", "--profile", "minimal", "--target", str(self.target)],
+                    env=environment, capture_output=True, text=True, encoding="utf-8", check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn("설치", result.stdout)
+                self.assertTrue((self.target / ".vibe/profile.json").is_file())
+                failed = subprocess.run(
+                    [sys.executable, str(script), "init", "--profile", "../invalid", "--target", str(self.target)],
+                    env=environment, capture_output=True, text=True, encoding="utf-8", check=False)
+                self.assertEqual(failed.returncode, 1)
+                self.assertIn("오류", failed.stderr)
+                self.assertNotIn("Traceback", failed.stderr)
+
+    def test_setup_help_is_utf8_with_legacy_stream_encoding(self):
+        script = Path(__file__).resolve().parents[1] / "scripts/setup.py"
+        for encoding in ("ascii", "cp1252"):
+            with self.subTest(encoding=encoding):
+                result = subprocess.run(
+                    [sys.executable, str(script), "--help"],
+                    env={**os.environ, "PYTHONIOENCODING": encoding},
+                    capture_output=True, text=True, encoding="utf-8", check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn("환경 선택", result.stdout)
 
     def test_dry_run_creates_nothing(self):
         self.install("web", "--dry-run")
@@ -185,7 +219,7 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(before, self.snapshot())
 
     def test_symbolic_link_target_refused(self):
-        actual = Path(self.temporary.name) / "actual"
+        actual = self.temp_root / "actual"
         actual.mkdir()
         try:
             self.target.symlink_to(actual, target_is_directory=True)
@@ -197,7 +231,7 @@ class InstallerTests(unittest.TestCase):
     @unittest.skipUnless(os.name == "nt", "Windows junction behavior")
     def test_dangling_junction_refused_before_any_install_writes(self):
         self.target.mkdir()
-        actual = Path(self.temporary.name) / "junction-destination"
+        actual = self.temp_root / "junction-destination"
         actual.mkdir()
         junction = self.target / ".agents"
         result = subprocess.run(["cmd", "/d", "/c", "mklink", "/J", str(junction), str(actual)],

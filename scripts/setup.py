@@ -13,6 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> int:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     parser = argparse.ArgumentParser(description="환경 선택, 의존성 복원, 실제 MCP 연결 검증")
     parser.add_argument("--profile", choices=["minimal", "web", "api", "data", "automation"], default="web")
     args = parser.parse_args()

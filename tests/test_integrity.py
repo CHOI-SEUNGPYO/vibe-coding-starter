@@ -3,8 +3,11 @@
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -17,7 +20,7 @@ class SkillIntegrityTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         self.skill = self.root / "skills/example"
         self.skill.mkdir(parents=True)
         (self.skill / "SKILL.md").write_text("---\nname: example\ndescription: Example\n---\n", encoding="utf-8")
@@ -43,6 +46,19 @@ class SkillIntegrityTests(unittest.TestCase):
         self.assertEqual(integrity.validate_installed(self.root, self.root, entries), 0)
         self.install()
         self.assertEqual(integrity.validate_installed(self.root, self.root, entries), 1)
+
+    def test_cli_output_is_utf8_with_legacy_stream_encoding(self):
+        script = self.root / "scripts/check_integrity.py"
+        script.parent.mkdir()
+        shutil.copyfile(SPEC.origin, script)
+        for encoding in ("ascii", "cp1252"):
+            with self.subTest(encoding=encoding):
+                result = subprocess.run(
+                    [sys.executable, str(script)],
+                    env={**os.environ, "PYTHONIOENCODING": encoding},
+                    capture_output=True, text=True, encoding="utf-8", check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn("원본 스킬 1개", result.stdout)
 
     def test_modified_source(self):
         (self.skill / "SKILL.md").write_text("modified", encoding="utf-8")

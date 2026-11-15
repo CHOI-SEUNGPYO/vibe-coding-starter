@@ -164,6 +164,9 @@ def validate_installed(root: Path, target: Path, entries: dict[str, dict]) -> in
 
 
 def main(argv: list[str] | None = None) -> int:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", type=Path, default=ROOT, help="검사할 설치 프로젝트; 기본값은 이 저장소")
     args = parser.parse_args(argv)
