@@ -8,7 +8,7 @@
 
 ## 바로 시작하기
 
-아래는 **Windows에서 독서 기록 웹앱을 처음 만드는 순서**입니다. 서버만 만들려면 [API 개발로 시작하기](#api-개발로-시작하기)로 이동하세요. 원하는 앱으로 시작하려면 [웹앱 첫 작업 양식](templates/first-task.md) 또는 [API 첫 작업 양식](templates/first-api-task.md)의 빈칸을 채우세요.
+아래는 **Windows에서 독서 기록 웹앱을 처음 만드는 순서**입니다. 다른 목적은 [API 개발](#api-개발로-시작하기), [CSV 분석·시각화](#데이터-분석으로-시작하기)로 이동하세요. 내 요구사항으로 시작하려면 [웹앱](templates/first-task.md) · [API](templates/first-api-task.md) · [데이터](templates/first-data-task.md) 첫 작업 양식을 사용하세요.
 
 ### 1. 필요한 프로그램 준비하기
 
@@ -283,11 +283,136 @@ macOS/Linux는 `python`을 `python3`로 바꿉니다. 설정 이름을 변경한
 
 이 검증 예제는 한 사람의 로컬 API입니다. 다중 사용자 권한·외부 공개·TLS·운영 백업은 이후 별도 요구사항으로 추가합니다. 실제로 실행한 검사와 제한은 [검증 기록](docs/verification.md#api-프로필-실제-앱-검증-2026-11-16)에 있습니다.
 
+## 데이터 분석으로 시작하기
+
+독서 기록 CSV에서 **월별 완독 수·페이지 수·상태별 기록 수·평균 평점**을 계산하고 한국어 차트를 파일로 만드는 예시입니다. 별도 복제본에 `data` 프로필을 적용해 실제로 구현·검증한 흐름입니다. starter에는 분석 앱이 들어 있지 않으며, 아래 첫 작업 지시로 만듭니다.
+
+### 1. 프로젝트 복제와 환경 적용
+
+[Git](https://git-scm.com/downloads), [Python **3.12 이상**](https://www.python.org/downloads/), [Node.js **22 이상**](https://nodejs.org/en/download), Codex와 GitHub 계정을 준비합니다. **starter 자체는 Python3.11부터 동작하지만 이번 분석 앱의 잠금 의존성에는 3.12 이상이 필요합니다.** 실제 실행은 Windows·Python3.15.2에서 확인했습니다. Matplotlib뿐 아니라 NumPy·contourpy 등 함께 설치되는 패키지와 CI의 Python 버전까지 맞춰야 합니다. Node는 문서 MCP 검사에만 사용합니다.
+
+GitHub에서 이 저장소를 **Use this template** 또는 **Fork**로 가져옵니다. 이름이 `reading-data`라면 `YOUR-ACCOUNT`를 본인 계정으로 바꾸고 PowerShell에서 실행합니다.
+
+```powershell
+git --version
+python --version
+node --version
+cd "$env:USERPROFILE\Documents"
+git clone https://github.com/YOUR-ACCOUNT/reading-data.git
+cd .\reading-data
+python scripts/setup.py --profile data
+```
+
+Python 명령이 안 되면 [준비 단계](#1-필요한-프로그램-준비하기)에서 설명한 대로 실제 설치된 실행 파일을 고릅니다. macOS/Linux에서는 보통 `python3`를 사용합니다. 이후 명령은 **저장소 루트**에서 실행합니다.
+
+`data 환경 준비 완료`가 나오면 스킬 **8종**과 **OpenAI Docs·Context7**이 적용된 상태입니다. Python 패턴·Ponytail·검토 지침을 포함하며, Postgres 지침은 그 DB를 사용할 때만 적용합니다. 브라우저·DB·클라우드 계정은 이 실습에 필요하지 않습니다. setup은 분석 라이브러리까지 설치하지 않으므로 다음 단계에서 앱의 가상환경과 잠금 파일을 만듭니다.
+
+### 2. Codex에서 첫 작업 지시 보내기
+
+복제한 루트 폴더를 열고 설정을 확인해 신뢰한 뒤 **새 채팅**을 시작합니다. 아래 지시를 그대로 붙여 넣으세요. 내 데이터에 맞추려면 [데이터 첫 작업 양식](templates/first-data-task.md)을 사용합니다. 차트는 [Vega-Lite 예제](https://vega.github.io/vega-lite/examples/)에서 월별·범주별 비교 방식을, [Observable Plot](https://observablehq.com/plot/)에서 축·집계 표현을, [Matplotlib 갤러리](https://matplotlib.org/stable/gallery/index.html)에서 Python 구현을 참고합니다. 개인 CSV를 이 사이트에 업로드할 필요는 없습니다.
+
+```text
+$task-delivery로 독서 기록 CSV 분석 프로젝트를 구현하고 검증해줘.
+
+AGENTS.md, docs/environments.md, docs/skill-routing.md를 읽고
+data 프로필과 OpenAI Docs·Context7 연결을 확인해줘.
+Ponytail full과 python-patterns를 적용하고 Ponytail Review로 검토해줘.
+
+Python CLI를 apps/data에 만들고 표준 csv 모듈로 읽고 집계해줘.
+시각화는 Matplotlib로 한국어 PNG 파일을 만들어줘. 웹 서버나 DB는 필요 없어.
+https://vega.github.io/vega-lite/examples/ 와 https://observablehq.com/plot/ 에서
+월별·상태별 비교 방식을 보고, Matplotlib 공식 갤러리로 구현을 확인해줘.
+막대그래프는 0부터 시작하고 단위·기간·집계 대상을 표시해줘.
+
+공개 가능한 가상 기록을 apps/data/samples/reading-log.csv에 만들어줘.
+열은 record_id,title,author,status,pages,rating,finished_date로 정해줘.
+status는 want/reading/done, pages는 1~100000의 정수, rating은 빈 값 또는 1~5의 정수로 해줘.
+done은 YYYY-MM-DD 완독일 필수, 나머지 상태의 완독일은 비워줘.
+record_id는 중복을 거절하고 같은 책의 재독은 다른 ID로 허용해줘.
+기본 인코딩은 UTF-8(BOM 포함 허용), CP949는 --encoding cp949로 명시하게 해줘.
+잘못된 타입·날짜·누락·중복 열·행·NUL을 행 번호와 원인으로 알려주고 실패해줘.
+잘못된 행을 조용히 버리지 마. 헤더만 있는 빈 기록은 0건으로 처리해줘.
+
+완독 수, 완독한 책의 페이지 합, 전체 상태별 건수,
+완독 기록 중 평점을 매긴 기록만의 평균과 그 분모를 계산해줘.
+월별 집계는 완독일 기준이며 첫 완독월과 마지막 완독월 사이의 빈 달도 0으로 표시해줘.
+페이지 합을 실제로 읽은 모든 페이지나 독서 시간으로 해석하지 마.
+결과는 summary.json, monthly.csv, status.csv, report.md, reading-summary.png로 만들어줘.
+
+CLI는 analyze.py --input <CSV경로> --output <새결과폴더>로 해줘.
+원본은 읽기만 하고 기존 결과 폴더를 덮어쓰지 마. 재실행은 새 결과 폴더를 사용해줘.
+입력·차트 생성 실패 때 원본과 기존 결과를 보존하고 미완성 결과를 성공으로 노출하지 마.
+한글 폰트와 라이선스를 준비하고, GUI 없는 환경에서도 차트를 저장해줘.
+실행할 때 폰트 다운로드나 사용자 전역 폰트 설치에 의존하지 않게 해줘.
+
+apps/data/.venv와 requirements.lock을 만들고 전이 의존성까지 포함해
+실제 Python 요구 버전을 README와 CI에 맞춰줘. 전역 패키지는 변경하지 마.
+개인 CSV는 apps/data/data/private/, 결과는 apps/data/output/에 두고 Git에서 제외해줘.
+공개 samples/와 테스트 자료는 추적 가능하게 하고 원본을 외부 검색에 보내지 마.
+루트 MCP용 package.json과 잠금 파일·설정은 보존해줘.
+
+.vibe/project.json에 목표·완료 조건과 실제 분석 검사를 등록해줘.
+Python 검사는 cwd:"apps/data", venv:".venv", command:["{python}", ...]로 해줘.
+CI는 현재 프로필 check → 앱에 맞는 Python·가상환경·잠금 의존성 준비 → verify로 맞춰줘.
+고정 샘플의 정답으로 집계를 검산하고, UTF-8 BOM·CP949·누락·중복·빈 데이터,
+원본 해시 보존, 같은 입력의 반복 집계 일치, 출력 실패와 기존 결과 보존을 검사해줘.
+실제 분석 명령과 python scripts/vibe.py verify를 모두 실행하고,
+생성된 PNG를 직접 열어 한글·잘림·축·수치·빈 상태를 확인해줘.
+starter 검사만 통과한 것을 분석 프로젝트 검증으로 보고하지 마.
+
+README에 설치·샘플 실행·내 CSV 적용·결과 열기·재실행 명령과 지표 한계를 적어줘.
+이번에는 로컬 구현·검증까지 진행하고 GitHub push와 결과 외부 공유는 별도 요청할게.
+```
+
+### 3. 샘플 분석과 결과 열기
+
+**2단계에서 앱·샘플·가상환경을 만든 뒤** 아래를 실행합니다. Codex가 이미 `output/demo`를 만들었다면 첫 줄의 이름만 `demo-2`처럼 아직 없는 이름으로 바꾸세요. 기존 폴더를 거절하는 것은 이전 결과를 보존하기 위한 동작입니다. 분석에 성공한 경우에만 결과를 열어, 실패 후 옛 차트를 새 결과로 착각하지 않게 합니다.
+
+```powershell
+$dataOutput = 'apps/data/output/demo'
+apps/data/.venv/Scripts/python.exe apps/data/analyze.py --input apps/data/samples/reading-log.csv --output $dataOutput
+if ($LASTEXITCODE -eq 0) {
+    Invoke-Item "$dataOutput/reading-summary.png"
+    Get-Content -Encoding UTF8 "$dataOutput/report.md"
+    python scripts/vibe.py verify
+} else {
+    throw '분석이 실패했습니다. 위 오류를 확인하고 새 출력 이름으로 다시 실행하세요.'
+}
+```
+
+macOS/Linux에서는 Python 경로를 `apps/data/.venv/bin/python`으로 바꾸고 결과 폴더의 PNG를 이미지 뷰어에서 엽니다. 서버를 켜 둘 필요가 없습니다. `summary.json`은 지표와 분모, `monthly.csv`는 월별 완독 수·페이지 합, `status.csv`는 전체 상태별 기록 수, `report.md`는 해석과 한계입니다. 그림의 숫자와 이 표가 맞는지도 확인하세요. 평점이 없으면 평균은 0점이 아니라 **계산할 대상 없음**입니다.
+
+### 4. 내 CSV로 바꾸기와 재실행
+
+실제 독서 기록은 `apps/data/data/private/reading-log.csv`에 둡니다. 공개 샘플은 그대로 두고 앱 README의 열 이름·날짜·상태 규칙에 맞춘 파일을 따로 준비합니다. 기존 웹앱·API의 데이터가 자동으로 변환되지는 않습니다. 특히 메모나 읽는 중인 페이지를 전체 페이지 수로 바꾸어 해석하지 마세요.
+
+```powershell
+New-Item -ItemType Directory -Force apps/data/data/private
+# 이 폴더에 내 reading-log.csv를 복사한 뒤 실행합니다.
+git check-ignore -v apps/data/data/private/reading-log.csv
+apps/data/.venv/Scripts/python.exe apps/data/analyze.py --input apps/data/data/private/reading-log.csv --output apps/data/output/my-reading-1
+```
+
+엑셀에서 저장했다면 먼저 **CSV UTF-8** 형식인지 확인합니다. 실제로 CP949인 파일은 분석 명령 끝에 `--encoding cp949`를 붙입니다. 인코딩을 자동 추측하거나 읽지 못한 글자를 삭제하지 않습니다. 열·행 오류가 나면 안내한 행을 확인하고 원본을 보존한 별도 수정본으로 다시 실행하세요.
+
+개인 입력 `**/data/private/`와 결과 `output/`는 Git에서 제외되며 공개 `samples/`는 제외하지 않습니다. **이미 Git이 추적하는 파일은 ignore 규칙으로 숨겨지지 않습니다.** 게시 전 `git status`와 `git ls-files -- apps/data/data/private apps/data/output`을 확인하고, 개인 파일이 추적된다면 먼저 추적 이력을 정리해야 합니다. 이 예시는 개인 원본이나 분석 결과를 자동으로 업로드하지 않습니다.
+
+**새 컴퓨터에서 clone으로 이어가려면**, 먼저 만든 앱의 코드·공개 샘플·폰트·잠금 파일·프로필 변경을 본인 GitHub 저장소에 커밋하고 push해야 합니다. 위 첫 지시는 로컬 구현까지만 요청하므로 이 단계는 자동으로 수행되지 않습니다. 개인 CSV와 결과가 제외됐는지 확인한 뒤 “이 프로젝트를 내 저장소에 반영해줘”라고 별도로 요청하세요. Git을 사용하지 않고 옮길 때는 코드와 공개 자료를 별도로 복사하되 `.venv`는 다시 만듭니다.
+
+앱이 포함된 저장소를 새 컴퓨터에 clone한 뒤 `python scripts/setup.py`로 현재 data 프로필을 복원하고 앱 의존성을 설치합니다.
+
+```powershell
+python -m venv apps/data/.venv
+apps/data/.venv/Scripts/python.exe -m pip install -r apps/data/requirements.lock
+```
+
+macOS/Linux는 `python3 -m venv apps/data/.venv`와 `apps/data/.venv/bin/python -m pip install -r apps/data/requirements.lock`을 사용합니다. 공개 샘플·코드·폰트는 저장소에서 복원하되 개인 CSV·기존 결과는 별도로 보관하고 옮겨야 합니다. 같은 입력의 표·JSON 집계가 일치하는지 확인하며, OS·라이브러리 버전이 다른 PNG의 바이트까지 같다고 가정하지 않습니다.
+
 ## 내 프로젝트의 첫 작업 지시 작성하기
 
-[웹앱 양식](templates/first-task.md) 또는 [API 양식](templates/first-api-task.md)을 열고 목적·사용자·기능·데이터·완료 조건을 채운 뒤 Codex에 보냅니다. 웹은 화면·사용 흐름, API는 인증·입출력·오류·재시도 계약을 적습니다. 잘 모르는 기술 선택은 “추천해줘”로 남겨도 됩니다.
+[웹앱](templates/first-task.md) · [API](templates/first-api-task.md) · [데이터](templates/first-data-task.md) 양식에서 목적과 완료 조건을 채운 뒤 Codex에 보냅니다. 웹은 화면·사용 흐름, API는 인증·입출력·재시도, 데이터는 입력 스키마·집계 기준·원본 보존을 적습니다. 잘 모르는 기술 선택은 “추천해줘”로 남겨도 됩니다.
 
-웹앱과 API는 위의 완성된 첫 지시를 시작점으로 사용할 수 있습니다. 다른 목적은 [환경 사용 가이드](docs/environments.md)의 프로필을 먼저 적용하고, 양식의 앱 경로와 검증 항목을 해당 프로젝트에 맞게 바꿉니다.
+웹앱·API·데이터 분석은 위의 완성된 첫 지시를 시작점으로 사용할 수 있습니다. 다른 목적은 [환경 사용 가이드](docs/environments.md)의 프로필을 먼저 적용하고, 양식의 앱 경로와 검증 항목을 해당 프로젝트에 맞게 바꿉니다.
 
 ## 목적별로 어떻게 쓰나요?
 

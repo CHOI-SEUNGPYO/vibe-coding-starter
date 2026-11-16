@@ -11,6 +11,8 @@
 .vibe/tmp/
 .vibe/reports/
 .vibe/local.json
+# Personal source data; public sample CSVs remain trackable.
+**/data/private/
 # Dependencies and generated browser evidence
 node_modules/
 __pycache__/

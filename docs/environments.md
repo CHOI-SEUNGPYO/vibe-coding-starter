@@ -110,6 +110,14 @@ Playwright로 좁은 화면, 키보드 탐색, 검색 결과 없음, 저장 실�
 
 작은 샘플에서 스키마·단위·결측값을 먼저 확인한다. 시각화는 [Observable Plot 갤러리](https://observablehq.com/@observablehq/plot-gallery)와 [Vega-Lite 갤러리](https://vega.github.io/vega-lite/examples/)에서 비교·추세·분포에 맞는 표현을 고른다. 이 링크를 참고했다고 JavaScript로 옮길 필요는 없다. 기존 Python 등 프로젝트 도구로 같은 표현을 구현해도 된다. 결과를 해석할 때 표본 크기와 집계 기준을 함께 표시한다.
 
+[README 데이터 시작 순서](../README.md#데이터-분석으로-시작하기)에는 실제 독서 CSV 실습과 첫 지시·실행 명령·내 파일 적용 방법이 있다. 다른 분석은 [데이터 첫 작업 양식](../templates/first-data-task.md)을 채운다. `python scripts/setup.py --profile data`는 스킬 8종과 문서 MCP 2개를 준비하며 분석 패키지·차트·앱 검사를 대신 만들지는 않는다.
+
+- **입력과 공개 범위:** 공개 가능한 가상 샘플은 `apps/data/samples/`, 개인 원본은 `apps/data/data/private/`, 결과는 `apps/data/output/`에 둔다. starter의 `**/data/private/`와 `output/` 제외 규칙은 이미 추적된 파일에는 적용되지 않는다. `*.csv` 전체를 숨겨 공개 검산 자료까지 빠뜨리지 않는다. 다른 프로젝트에 설정만 설치했다면 그 프로젝트의 Git 제외 규칙도 확인한다.
+- **스키마와 오류:** UTF-8 BOM 여부와 인코딩을 명시한다. 누락·중복·잘못된 날짜·숫자·행 길이를 조용히 버리지 않는다. 빈 데이터와 읽기 실패를 구분하며 집계 분모·기간·중복 정책을 설명한다. 독서 실습은 잘못된 행이 하나라도 있으면 전체 분석을 실패시킨다.
+- **실행 환경:** 전용 `.venv`와 잠금 파일을 사용하고 전이 의존성까지 확인한다. 실습의 Matplotlib3.11.2는 Python3.11 이상이지만 잠금 NumPy2.5.5·contourpy1.4.0은 3.12 이상을 요구해, 앱 안내와 CI를 3.12 이상으로 맞췄다. starter 자체의 Python3.11 지원과 구분한다.
+- **그림:** [Matplotlib 갤러리](https://matplotlib.org/stable/gallery/index.html)를 참고하고 GUI 없이 파일을 만드는 backend와 한글 폰트·라이선스를 준비한다. 파일이 생긴 것만 확인하지 말고 실제 PNG에서 글자·축·잘림·빈 상태를 확인한다. 정적인 차트 프로젝트에 Playwright나 웹 서버를 필수로 넣지 않는다.
+- **검사와 재실행:** 고정 정답을 별도로 계산해 검산하고 원본 해시·반복 집계 일치·출력 실패 후 보존을 확인한다. 실습은 기존 결과 폴더를 덮어쓰지 않으므로 새 출력 이름을 지정한다. `.vibe/project.json`에는 `cwd: apps/data`, `venv: .venv`로 앱 검사를 등록하고 CI에서 그 패키지를 먼저 설치한다. `verify`의 “등록된 검사”가 starter 검사뿐인지 앱 계산까지 포함하는지 구분한다.
+
 ```text
 월별 처리시간 CSV를 분석해줘. https://vega.github.io/vega-lite/examples/ 에서
 분포 비교와 추세를 보여 주는 예시를 골라 선택 이유를 설명해줘.

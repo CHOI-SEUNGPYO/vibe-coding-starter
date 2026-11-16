@@ -541,7 +541,7 @@ def verify(args: argparse.Namespace) -> int:
             continue
         print(f"{'통과' if code == 0 else '실패'}: {name} (종료 코드 {code})")
         failures += code != 0
-    print(f"앱 검사 {len(checks)}개 중 {len(checks) - failures}개 통과")
+    print(f"등록된 검사 {len(checks)}개 중 {len(checks) - failures}개 통과")
     return 1 if failures else 0
 
 

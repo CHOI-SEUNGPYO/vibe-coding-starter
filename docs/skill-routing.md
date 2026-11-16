@@ -44,6 +44,8 @@ React라면 Vercel 성능 지침도 적용해. 실제 저장과 모바일 흐름
 
 Python 프로젝트에는 `python-patterns`로 예외·타입·자원 관리·구조를 점검한다. 분석 질문과 검증할 지표를 먼저 정하고, Postgres를 사용할 때만 DB 지침을 함께 적용한다. 차트는 [Observable Plot](https://observablehq.com/plot/)과 [Vega-Lite 예제](https://vega.github.io/vega-lite/examples/)에서 목적에 맞는 표현을 참고한다.
 
+[데이터 첫 작업 양식](../templates/first-data-task.md)으로 입력·집계 기준·공개 범위를 정한다. 작은 CSV는 표준 라이브러리로 충분할 수 있으며 스킬에 맞추려고 DB나 웹 화면을 추가하지 않는다. 한글 정적 차트는 [Matplotlib 갤러리](https://matplotlib.org/stable/gallery/index.html)를 참고하고 생성된 파일을 직접 열어 확인한다. 검토에서는 원본 보존, 제외한 행과 지표 분모, 같은 입력의 재실행 결과, 잘못된 입력·출력 실패를 우선 확인한다.
+
 ```text
 CSV의 월별 불량률을 분석해줘. 입력 스키마와 누락·중복을 먼저 확인하고,
 Python 패턴 지침에 맞춰 재실행 가능한 흐름으로 만들어줘.
