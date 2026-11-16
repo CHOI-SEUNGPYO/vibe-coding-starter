@@ -1,0 +1,29 @@
+[
+  {
+    "name": "data 의존성",
+    "cwd": "examples/reading/data",
+    "venv": ".venv",
+    "command": [
+      "{python}",
+      "-m",
+      "pip",
+      "check"
+    ],
+    "timeout_seconds": 30
+  },
+  {
+    "name": "data 예제 검사",
+    "cwd": "examples/reading/data",
+    "venv": ".venv",
+    "command": [
+      "{python}",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "timeout_seconds": 120
+  }
+]

@@ -1,0 +1,5 @@
+# Direct runtime dependencies and the HTTP test client; transitive pins are in requirements.lock.
+fastapi==0.163.1
+uvicorn==0.54.0
+httpx2==2.16.0
+python-dotenv==1.2.4

@@ -1,0 +1,8 @@
+# Keep sample hashes and published text results stable on Windows and POSIX.
+*.csv text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.png binary
+*.ttf binary
+# Preserve the upstream license bytes, including its original trailing space.
+data/fonts/OFL.txt -text whitespace=-blank-at-eol

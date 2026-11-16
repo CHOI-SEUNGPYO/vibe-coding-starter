@@ -1,0 +1,2 @@
+# The execution key hashes the exact source bytes, so keep the public fixture stable.
+samples/*.csv text eol=lf

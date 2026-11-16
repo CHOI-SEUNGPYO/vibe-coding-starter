@@ -1,0 +1,77 @@
+{
+  "verified_on": "2026-11-16",
+  "os": "Windows",
+  "python": "3.15.2",
+  "profile": "minimal",
+  "active_skills": 6,
+  "active_mcp": [],
+  "sample": "examples/reading/minimal/samples/books.json",
+  "sample_kind": "fictional public records",
+  "sample_sha256": "8f1b4f47c324fe0ee9af89db52f457be50dbf81ea4e654296bcaf7710a1c4f77",
+  "source_unchanged": true,
+  "app_tests": {
+    "total": 11,
+    "passed": 11
+  },
+  "trial_integrated_checks": {
+    "total": 4,
+    "passed": 4
+  },
+  "trial_starter_tests": {
+    "total": 65,
+    "passed": 62,
+    "skipped": 3,
+    "skip_reason": "Windows symlink permission"
+  },
+  "commands": [
+    {
+      "command": [
+        "python",
+        "examples/reading/minimal/search.py",
+        "--input",
+        "examples/reading/minimal/samples/books.json",
+        "--query",
+        "숲",
+        "--status",
+        "reading"
+      ],
+      "exit_code": 0,
+      "result_file": "search.json",
+      "matching_ids": [
+        2
+      ]
+    },
+    {
+      "command": [
+        "python",
+        "examples/reading/minimal/search.py",
+        "--input",
+        "examples/reading/minimal/samples/books.json",
+        "--query",
+        "STRASSE"
+      ],
+      "exit_code": 0,
+      "result_file": "unicode.json",
+      "matching_ids": [
+        4
+      ]
+    },
+    {
+      "command": [
+        "python",
+        "examples/reading/minimal/search.py",
+        "--input",
+        "examples/reading/minimal/samples/books.json",
+        "--query",
+        "없는 제목"
+      ],
+      "exit_code": 0,
+      "result_file": "empty.json",
+      "matching_ids": []
+    }
+  ],
+  "limits": [
+    "Local execution results; remote CI is reported separately.",
+    "Small in-memory reading logs; no large-scale performance claim."
+  ]
+}

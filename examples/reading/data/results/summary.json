@@ -1,0 +1,15 @@
+{
+  "source_sha256": "dc3cd4be27d9ae45213ee38de83e90d6aecbcb114348aeadbba1696e0010833f",
+  "total_records": 12,
+  "completed_records": 7,
+  "completed_pages": 2000,
+  "rated_completed_records": 6,
+  "average_completed_rating": 4.333,
+  "status_counts": {
+    "want": 2,
+    "reading": 3,
+    "done": 7
+  },
+  "completion_month_start": "2026-01",
+  "completion_month_end": "2026-06"
+}

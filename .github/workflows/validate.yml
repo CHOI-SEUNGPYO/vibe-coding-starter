@@ -25,6 +25,8 @@ jobs:
       # Validate the committed profile; API/data forks must keep their selection.
       - run: python scripts/vibe.py check
       - run: python scripts/vibe.py verify
+      - run: python -m unittest discover -s examples/reading/minimal/tests -v
+      - run: python -m unittest discover -s examples/reading/automation/tests -v
   browser-mcp:
     name: Real Chromium through MCP
     runs-on: ubuntu-latest
@@ -38,3 +40,56 @@ jobs:
       - run: node --test tests/test_mcp.mjs
       - run: node node_modules/playwright/cli.js install --with-deps chromium
       - run: node scripts/check_mcp.mjs browser
+  reading-python:
+    name: Reading examples (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - run: python -m venv examples/reading/api/.venv
+      - run: python -m venv examples/reading/data/.venv
+      - name: Install and test API and data (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          examples/reading/api/.venv/Scripts/python.exe -m pip install -r examples/reading/api/requirements.lock
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          examples/reading/data/.venv/Scripts/python.exe -m pip install -r examples/reading/data/requirements.lock
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          examples/reading/api/.venv/Scripts/python.exe -m pip check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          examples/reading/api/.venv/Scripts/python.exe -m unittest discover -s examples/reading/api/tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          examples/reading/data/.venv/Scripts/python.exe -m pip check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          examples/reading/data/.venv/Scripts/python.exe -m unittest discover -s examples/reading/data/tests -v
+          exit $LASTEXITCODE
+      - name: Install and test API and data (Linux and macOS)
+        if: runner.os != 'Windows'
+        run: |
+          examples/reading/api/.venv/bin/python -m pip install -r examples/reading/api/requirements.lock
+          examples/reading/data/.venv/bin/python -m pip install -r examples/reading/data/requirements.lock
+          examples/reading/api/.venv/bin/python -m pip check
+          examples/reading/api/.venv/bin/python -m unittest discover -s examples/reading/api/tests -v
+          examples/reading/data/.venv/bin/python -m pip check
+          examples/reading/data/.venv/bin/python -m unittest discover -s examples/reading/data/tests -v
+  reading-web:
+    name: Reading web example
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: examples/reading/web/package-lock.json
+      - run: npm --prefix examples/reading/web ci
+      - run: npm --prefix examples/reading/web run typecheck
+      - run: npm --prefix examples/reading/web test
+      - run: npm --prefix examples/reading/web run build

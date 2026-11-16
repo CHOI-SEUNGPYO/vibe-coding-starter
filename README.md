@@ -6,9 +6,23 @@
 
 프레임워크나 모델 이름을 강제하지 않습니다. 현재 계정의 모델과 프로젝트의 기술 스택을 유지하고, 해야 할 일에 맞춰 환경을 고릅니다. 새 컴퓨터에서 필요한 작업은 의존성 복원과 본인 계정 인증입니다.
 
+## 완성된 독서 예제와 결과
+
+**5개 프로필을 모두 실제 독서 프로젝트로 검증한 [예제 모음](examples/reading/README.md)**이 들어 있습니다. 소스·잠금 파일·검사·가상 샘플·실행 결과를 함께 공개합니다. 바로 써보려면 아래 예제 README를 따르고, 새 앱을 처음부터 만들려면 이어지는 시작 안내와 첫 작업 양식을 사용하세요.
+
+| 프로필 | 실행할 예제 | 결과 |
+| --- | --- | --- |
+| `web` | [독서 기록 웹앱](examples/reading/web/README.md) | [PC·모바일 화면](examples/reading/web/results/README.md) |
+| `api` | [독서 기록 REST API](examples/reading/api/README.md) | [요청·응답과 OpenAPI](examples/reading/api/results/README.md) |
+| `data` | [독서 CSV 분석](examples/reading/data/README.md) | [보고서](examples/reading/data/results/report.md) · [차트](examples/reading/data/results/reading-summary.png) |
+| `minimal` | [읽기 전용 독서 검색 CLI](examples/reading/minimal/README.md) | [검색 결과](examples/reading/minimal/results/README.md) |
+| `automation` | [주간 독서 요약 자동화](examples/reading/automation/README.md) | [미리보기·실행·재실행](examples/reading/automation/results/README.md) |
+
+각 예제는 독립 실행하며, `results/`에는 공개용 가상 자료만 사용했습니다. 실제 `.env`·DB·개인 CSV·브라우저 상태와 초기 조사 보고서는 게시하지 않습니다. [예제별 검증 범위](examples/reading/VERIFICATION.md)
+
 ## 바로 시작하기
 
-아래는 **Windows에서 독서 기록 웹앱을 처음 만드는 순서**입니다. 다른 목적은 [API 개발](#api-개발로-시작하기), [CSV 분석·시각화](#데이터-분석으로-시작하기)로 이동하세요. 내 요구사항으로 시작하려면 [웹앱](templates/first-task.md) · [API](templates/first-api-task.md) · [데이터](templates/first-data-task.md) 첫 작업 양식을 사용하세요.
+아래는 **Windows에서 독서 기록 웹앱을 처음 만드는 순서**입니다. 다른 목적은 [API 개발](#api-개발로-시작하기), [CSV 분석·시각화](#데이터-분석으로-시작하기), [작은 도구와 자동화](#작은-도구와-자동화로-시작하기)로 이동하세요. 내 요구사항으로 시작하려면 해당 절의 첫 작업 양식을 사용하세요.
 
 ### 1. 필요한 프로그램 준비하기
 
@@ -159,7 +173,7 @@ python scripts/vibe.py verify
 
 ## API 개발로 시작하기
 
-웹 화면 없이 **독서 기록을 저장하고 조회하는 API**를 만드는 순서입니다. 아래 단계는 별도 복제본에 `api` 프로필을 적용해 FastAPI + SQLite로 실제 구현·검증했습니다. 예제 앱은 starter에 들어 있지 않으며, 3단계의 지시로 새로 만듭니다.
+웹 화면 없이 **독서 기록을 저장하고 조회하는 API**를 만드는 순서입니다. 아래 단계는 별도 복제본에 `api` 프로필을 적용해 FastAPI + SQLite로 실제 구현·검증했습니다. 아래는 `apps/api`에 새 앱을 만드는 흐름이며, 이미 완성된 코드는 [API 예제](examples/reading/api/README.md)에서 바로 실행할 수 있습니다.
 
 ### 1. 프로그램 준비와 프로젝트 복제
 
@@ -285,7 +299,7 @@ macOS/Linux는 `python`을 `python3`로 바꿉니다. 설정 이름을 변경한
 
 ## 데이터 분석으로 시작하기
 
-독서 기록 CSV에서 **월별 완독 수·페이지 수·상태별 기록 수·평균 평점**을 계산하고 한국어 차트를 파일로 만드는 예시입니다. 별도 복제본에 `data` 프로필을 적용해 실제로 구현·검증한 흐름입니다. starter에는 분석 앱이 들어 있지 않으며, 아래 첫 작업 지시로 만듭니다.
+독서 기록 CSV에서 **월별 완독 수·페이지 수·상태별 기록 수·평균 평점**을 계산하고 한국어 차트를 파일로 만드는 예시입니다. 별도 복제본에 `data` 프로필을 적용해 실제로 구현·검증했습니다. 아래는 `apps/data`에 새로 만드는 흐름이며, 완성된 코드는 [CSV 분석 예제](examples/reading/data/README.md)에서 바로 실행할 수 있습니다.
 
 ### 1. 프로젝트 복제와 환경 적용
 
@@ -408,11 +422,75 @@ apps/data/.venv/Scripts/python.exe -m pip install -r apps/data/requirements.lock
 
 macOS/Linux는 `python3 -m venv apps/data/.venv`와 `apps/data/.venv/bin/python -m pip install -r apps/data/requirements.lock`을 사용합니다. 공개 샘플·코드·폰트는 저장소에서 복원하되 개인 CSV·기존 결과는 별도로 보관하고 옮겨야 합니다. 같은 입력의 표·JSON 집계가 일치하는지 확인하며, OS·라이브러리 버전이 다른 PNG의 바이트까지 같다고 가정하지 않습니다.
 
+## 작은 도구와 자동화로 시작하기
+
+저장소를 내려받고 루트에서 목적에 맞는 프로필을 선택합니다. 이미 구현된 예제를 먼저 실행해보고 필요한 부분을 바꿔도 됩니다.
+
+### `minimal`: JSON 독서 기록 검색
+
+Python3.11 이상이면 됩니다. 프로필은 공통 스킬6종을 적용하며 MCP·Node·브라우저 설치는 필요하지 않습니다.
+
+```powershell
+python scripts/setup.py --profile minimal
+python examples/reading/minimal/search.py --input examples/reading/minimal/samples/books.json --query 숲 --status reading
+python -m unittest discover -s examples/reading/minimal/tests -v
+```
+
+가상 샘플의 `작은 숲의 시간` 기록이 JSON으로 출력됩니다. 검색만 하므로 원본을 수정하지 않습니다. [예제 README](examples/reading/minimal/README.md)와 [실제 결과](examples/reading/minimal/results/README.md)를 확인하세요. CLI 입력·오류 표현은 [Python argparse](https://docs.python.org/3/library/argparse.html), JSON 처리 기준은 [Python json](https://docs.python.org/3/library/json.html)을 참고합니다.
+
+새 도구를 만들 때는 [작은 도구 첫 작업 양식](templates/first-minimal-task.md)을 사용하거나, Codex에서 루트 폴더를 열고 새 채팅에 다음을 보냅니다.
+
+```text
+$task-delivery로 독서 JSON 검색 도구를 만들어줘.
+minimal 프로필과 AGENTS.md를 확인하고 Ponytail full을 적용해줘.
+Python 표준 라이브러리만 사용해 apps/minimal에 CLI를 만들어줘.
+가상 books.json 배열에서 제목·저자 검색과 읽는 상태 필터를 제공하고
+한글 정규화·대소문자·결과 없음·잘못된 필드·중복 ID를 처리해줘.
+JSON은 읽기만 하고 결과는 stdout, 오류는 stderr와 비정상 종료로 알려줘.
+실제 명령을 .vibe/project.json에 등록하고 고정 정답·원본 해시로 검증해줘.
+https://docs.python.org/3/library/argparse.html 과 json 문서를 참고해줘.
+실행 방법과 남은 제한을 적고 이번에는 로컬 구현·검증까지 해줘.
+```
+
+### `automation`: 주간 요약 생성과 재실행
+
+앱은 표준 Python3.11 이상으로 실행합니다. 프로필 준비에는 Node22 이상이 필요하며 스킬10종과 OpenAI Docs·Context7·격리 Playwright를 확인합니다. 이 예제는 파일 자동화이므로 브라우저 계정이나 메시지 발송은 사용하지 않습니다.
+
+```powershell
+python scripts/setup.py --profile automation
+python examples/reading/automation/weekly_digest.py --input examples/reading/automation/samples/reading-log.csv --week 2026-11-09 --output examples/reading/automation/work/output
+```
+
+기본 실행은 **미리보기**이며 출력 폴더를 만들지 않습니다. 기간·지표·출력 계획을 확인한 뒤 같은 명령 끝에 `--apply`를 붙이면 요약을 저장합니다. 같은 입력·같은 주로 다시 `--apply`하면 기존 결과의 내용을 확인하고 중복 생성 없이 끝납니다. 손상된 결과는 덮어쓰지 않고 오류를 알립니다.
+
+```powershell
+python examples/reading/automation/weekly_digest.py --input examples/reading/automation/samples/reading-log.csv --week 2026-11-09 --output examples/reading/automation/work/output --apply
+python -m unittest discover -s examples/reading/automation/tests -v
+```
+
+샘플은 2026-11-09~15에 완독3건·540쪽·평점 평균4점(2건 기준)입니다. [실행·재실행 결과](examples/reading/automation/results/README.md)에 실제 출력이 있습니다. `--week`는 월요일, CSV 형식은 [예제 README](examples/reading/automation/README.md)를 따릅니다. 이 명령은 **지금 한 번 실행**하며 정기 일정 등록과 외부 전송은 별도 작업입니다.
+
+[n8n 워크플로 사례](https://n8n.io/workflows/)에서 입력→미리보기→처리→결과 확인 순서를 참고하고 [Python pathlib](https://docs.python.org/3/library/pathlib.html), [CSV](https://docs.python.org/3/library/csv.html) 문서로 구현을 확인합니다. n8n 계정이나 서버를 설치해야 하는 예제는 아닙니다. 새 자동화를 만들 때는 [자동화 첫 작업 양식](templates/first-automation-task.md) 또는 아래 지시를 사용합니다.
+
+```text
+$task-delivery로 독서 CSV에서 주간 요약을 만드는 자동화를 구현해줘.
+automation 프로필을 확인하고 Ponytail full, Python 패턴과 재시도 설계 지침을 써줘.
+apps/automation에 표준 Python CLI를 만들고 --input, --week, --output을 받아줘.
+기본은 dry-run으로 아무 파일도 쓰지 말고 --apply에서만 결과를 생성해줘.
+월요일~일요일 완독 기록만 집계하고 평점의 분모와 빈 주 처리를 명시해줘.
+입력 해시·기간·계약 버전으로 실행을 구분해 같은 요청을 두 번 실행해도 중복이 없게 해줘.
+기존 결과가 변조·누락됐으면 덮어쓰지 말고 실패로 알려줘.
+원본 보존, 중간 실패 정리, dry-run·apply·재시도를 실제로 검사해줘.
+README에 명령과 결과 위치를 쓰고 .vibe/project.json 및 CI에 실제 검사를 등록해줘.
+n8n 공개 사례로 작업 순서를 참고하되 이번에는 로컬 파일 생성만 해줘.
+정기 일정 등록, 이메일·메신저 발송, Git 게시·배포는 포함하지 않아.
+```
+
 ## 내 프로젝트의 첫 작업 지시 작성하기
 
-[웹앱](templates/first-task.md) · [API](templates/first-api-task.md) · [데이터](templates/first-data-task.md) 양식에서 목적과 완료 조건을 채운 뒤 Codex에 보냅니다. 웹은 화면·사용 흐름, API는 인증·입출력·재시도, 데이터는 입력 스키마·집계 기준·원본 보존을 적습니다. 잘 모르는 기술 선택은 “추천해줘”로 남겨도 됩니다.
+[웹앱](templates/first-task.md) · [API](templates/first-api-task.md) · [데이터](templates/first-data-task.md) · [작은 도구](templates/first-minimal-task.md) · [자동화](templates/first-automation-task.md) 양식에서 목적과 완료 조건을 채운 뒤 Codex에 보냅니다. 잘 모르는 기술 선택은 “추천해줘”로 남겨도 됩니다.
 
-웹앱·API·데이터 분석은 위의 완성된 첫 지시를 시작점으로 사용할 수 있습니다. 다른 목적은 [환경 사용 가이드](docs/environments.md)의 프로필을 먼저 적용하고, 양식의 앱 경로와 검증 항목을 해당 프로젝트에 맞게 바꿉니다.
+다섯 목적 모두 위의 완성된 첫 지시를 시작점으로 사용할 수 있습니다. [환경 사용 가이드](docs/environments.md)의 프로필을 먼저 적용하고, 양식의 앱 경로와 검증 항목을 해당 프로젝트에 맞게 바꿉니다.
 
 ## 목적별로 어떻게 쓰나요?
 
@@ -507,6 +585,6 @@ python scripts/vibe.py init --profile api --target ../my-existing-project
 
 설정은 **2026-11-15 / Codex CLI 0.169.0-alpha.11.1**에서 확인했습니다. 확인하지 않은 모델 ID는 고정하지 않았습니다. 새 버전에서 설정 형식이 바뀌면 공식 문서와 실제 설정 로딩 결과를 먼저 확인합니다.
 
-CI는 Windows·macOS·Linux에서 Python 하네스 검사를 실행하고 Linux에서 실제 Chromium MCP 흐름을 실행합니다. 외부 Docs 서버 검사는 수동 온라인 검사에 포함해 네트워크 장애가 코드 회귀와 섞이지 않게 했습니다. [검증 기록](docs/verification.md)
+CI는 Windows·macOS·Linux에서 Python 하네스와 공개 Python 예제를 검사하고, Linux에서 실제 Chromium MCP 흐름과 웹 예제의 타입·테스트·빌드를 확인합니다. 외부 Docs 서버 검사는 수동 온라인 검사에 포함해 네트워크 장애가 코드 회귀와 섞이지 않게 했습니다. [환경 검증 기록](docs/verification.md), [예제 검증 기록](examples/reading/VERIFICATION.md)
 
 설정과 스킬을 먼저 읽고 사용할 프로젝트를 신뢰하세요. 검사 명령은 실제 프로그램을 실행합니다. 비밀키·토큰·회사 원본·개인 데이터는 커밋하지 않습니다. 자체 파일은 [MIT](LICENSE), 가져온 스킬은 각 원본 라이선스를 따릅니다.

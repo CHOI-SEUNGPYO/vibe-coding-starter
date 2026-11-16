@@ -72,6 +72,8 @@ Python API·데이터 앱의 패키지는 별도 가상환경에 설치한다. s
 
 ### `minimal` — 작은 수정
 
+바로 실행할 코드는 [독서 JSON 검색 예제](../examples/reading/minimal/README.md), 새 요청용 양식은 [작은 도구 양식](../templates/first-minimal-task.md)에 있다. `setup.py --profile minimal`은 스킬6종을 적용하며 MCP·Node·브라우저 준비를 요구하지 않는다. 예제는 읽기 전용 검색·필터와 잘못된 입력·원본 보존을 검사한다. 각 예제의 `checks.example.json`은 기존 프로젝트 검사 목록에 병합해서 사용한다.
+
 문제를 재현하고 기존 구현 방식으로 고친 다음 해당 동작을 확인한다. UI가 바뀐다면 [Radix UI](https://www.radix-ui.com/)에서 필요한 컴포넌트의 키보드·포커스 패턴만 확인한다. CLI나 순수 로직 수정에는 디자인 사이트나 브라우저 MCP를 추가할 필요가 없다.
 
 ```text
@@ -126,6 +128,8 @@ Playwright로 좁은 화면, 키보드 탐색, 검색 결과 없음, 저장 실�
 ```
 
 ### `automation` — 반복 실행과 실패 복구
+
+[주간 독서 요약 예제](../examples/reading/automation/README.md)는 기본 dry-run, 명시적 apply, 같은 입력의 중복 실행 방지, 결과 변조·누락 확인을 실제로 구현했다. [자동화 첫 작업 양식](../templates/first-automation-task.md)에는 트리거·입력·쓰기 범위·재시도·실패 복구를 채운다. 프로필은 스킬10종과 문서·브라우저 MCP3개를 준비하지만, 로컬 파일 자동화에서 사용자 브라우저나 외부 전송을 억지로 사용하지 않는다. 실행 CLI와 정기 일정 등록은 별개다.
 
 [n8n 워크플로 템플릿](https://n8n.io/workflows/)에서 비슷한 작업의 트리거·변환·분기·결과 저장 순서를 참고한다. 템플릿의 외부 연결이나 유료 기능을 자동으로 설치·구독하지 않는다. 현재 선택한 도구로 구현하고, 테스트 데이터로 미리보기·중복 실행·실패 후 재시도를 확인한다. 사람이 검토하는 화면이 필요하면 [Mobbin](https://mobbin.com/)의 확인·오류 처리 흐름도 참고한다.
 

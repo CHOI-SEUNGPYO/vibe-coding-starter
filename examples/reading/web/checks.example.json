@@ -1,0 +1,32 @@
+[
+  {
+    "name": "web typecheck",
+    "cwd": "examples/reading/web",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "timeout_seconds": 120
+  },
+  {
+    "name": "web test",
+    "cwd": "examples/reading/web",
+    "command": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "timeout_seconds": 120
+  },
+  {
+    "name": "web build",
+    "cwd": "examples/reading/web",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "timeout_seconds": 120
+  }
+]

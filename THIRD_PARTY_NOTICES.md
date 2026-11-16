@@ -64,3 +64,13 @@ must retain the applicable attribution and license requirements.
 These additions include selected skill directories, not each project's plugin
 hooks or global configuration. Inclusion does not imply endorsement by the
 listed authors or organizations.
+
+## Reading data example fonts
+
+`examples/reading/data/fonts` bundles Noto Sans KR Regular and Bold, derived at
+weights 400 and 700 from the Google Fonts variable font at commit
+`b38c5c93af322c45f633e17ac440ec1e6c94d489`. The SIL Open Font License 1.1,
+upstream URL and hash, and derived-file hashes are preserved in that directory.
+The full variable font is available from its pinned source and is not needed at
+runtime. Python/npm dependencies are restored from each example's lock file;
+their installed packages are not vendored into this repository.

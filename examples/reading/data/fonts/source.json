@@ -1,0 +1,37 @@
+{
+  "source": "https://github.com/google/fonts/tree/b38c5c93af322c45f633e17ac440ec1e6c94d489/ofl/notosanskr",
+  "commit": "b38c5c93af322c45f633e17ac440ec1e6c94d489",
+  "license": "SIL Open Font License 1.1",
+  "files": {
+    "NotoSansKR[wght].ttf": {
+      "url": "https://raw.githubusercontent.com/google/fonts/b38c5c93af322c45f633e17ac440ec1e6c94d489/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf",
+      "sha256": "194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252",
+      "bytes": 10414588
+    },
+    "OFL.txt": {
+      "url": "https://raw.githubusercontent.com/google/fonts/b38c5c93af322c45f633e17ac440ec1e6c94d489/ofl/notosanskr/OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
+      "bytes": 4388
+    }
+  },
+  "derived_static_fonts": {
+    "NotoSansKR-Regular.ttf": {
+      "axis": {
+        "wght": 400
+      },
+      "tool": "fontTools 4.68.0",
+      "sha256": "a5de2fc691da377bda97300f151260362cdb606f8809e18904d3ebe251286f07",
+      "bytes": 6224812
+    },
+    "NotoSansKR-Bold.ttf": {
+      "axis": {
+        "wght": 700
+      },
+      "tool": "fontTools 4.68.0",
+      "sha256": "fd31f7804740d98794cf2891be8f7960f6d84a9c14446d233ba7e58719e9bf48",
+      "bytes": 6222656
+    }
+  },
+  "upstream_variable_font_bundled": false,
+  "note": "The original variable font can be fetched from its pinned URL above; the Regular and Bold static derivatives used at runtime are bundled with the OFL."
+}

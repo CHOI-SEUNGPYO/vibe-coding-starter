@@ -1,0 +1,19 @@
+{
+  "action": "already-complete",
+  "destination": "examples/reading/automation/work/output/255ba29663914e5cd761d5b5be6f38fdb6336e63de378222ebcf0a080c96e515",
+  "mode": "apply",
+  "run_key": "255ba29663914e5cd761d5b5be6f38fdb6336e63de378222ebcf0a080c96e515",
+  "summary": {
+    "average_completed_rating": 4.0,
+    "completed_pages": 540,
+    "completed_records": 3,
+    "encoding": "utf-8-sig",
+    "input_records": 7,
+    "rated_completed_records": 2,
+    "run_key": "255ba29663914e5cd761d5b5be6f38fdb6336e63de378222ebcf0a080c96e515",
+    "source_sha256": "2706ae6b5010f3e35a5780fdf5504bc8c9f50177dea33d40530f36064c0f84dc",
+    "version": "reading-weekly-v1",
+    "week_end": "2026-11-15",
+    "week_start": "2026-11-09"
+  }
+}

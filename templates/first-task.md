@@ -7,7 +7,7 @@
 3. 게시 범위는 `로컬 구현·검증까지`, `지정한 GitHub 저장소에 반영`, `지정한 서비스에 배포` 중 필요한 범위를 적습니다. 게시하려면 대상 저장소·브랜치나 서비스를 함께 적습니다. 비밀키·토큰·실제 개인정보는 양식에 넣지 않습니다.
 4. 아래 코드블록 안의 내용을 통째로 복사합니다. 완성된 예시는 [README](../README.md)에 있습니다.
 
-서버 API는 [API 양식](first-api-task.md), CSV 분석·시각화는 [데이터 양식](first-data-task.md)을 사용하세요. 데이터 양식에는 스키마·인코딩·집계 기준·원본 보존·재실행 검사가 있습니다. 자동화라면 [환경 사용 가이드](../docs/environments.md)에서 프로필을 먼저 고르고 앱 경로와 검증 항목을 바꿉니다.
+서버 API는 [API 양식](first-api-task.md), CSV 분석·시각화는 [데이터 양식](first-data-task.md), 작은 CLI 도구는 [minimal 양식](first-minimal-task.md), 반복 처리는 [자동화 양식](first-automation-task.md)을 사용하세요. [환경 사용 가이드](../docs/environments.md)에서 목적에 맞는 프로필을 고를 수 있습니다.
 
 디자인 링크를 모르겠으면 [디자인 레퍼런스 가이드](../docs/design-references.md)를 참고하세요. 랜딩 페이지는 Lapa Ninja·Landbook, 목록·검색 중심 웹앱은 SaaSFrame·Mobbin에서 접근 가능한 사례를 비교하도록 요청할 수 있습니다.
 

@@ -1,0 +1,10 @@
+{
+  "checks": [
+    {
+      "name": "독서 JSON 검색",
+      "command": ["{python}", "-m", "unittest", "discover", "-s", "tests", "-v"],
+      "cwd": "examples/reading/minimal",
+      "timeout_seconds": 30
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "checks": [
+    {
+      "name": "독서 자동화 미리보기·재시도·복구",
+      "command": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "examples/reading/automation",
+      "timeout_seconds": 60
+    }
+  ]
+}

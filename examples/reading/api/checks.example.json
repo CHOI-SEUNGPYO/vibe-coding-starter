@@ -1,0 +1,29 @@
+[
+  {
+    "name": "api 의존성",
+    "cwd": "examples/reading/api",
+    "venv": ".venv",
+    "command": [
+      "{python}",
+      "-m",
+      "pip",
+      "check"
+    ],
+    "timeout_seconds": 30
+  },
+  {
+    "name": "api 예제 검사",
+    "cwd": "examples/reading/api",
+    "venv": ".venv",
+    "command": [
+      "{python}",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "timeout_seconds": 120
+  }
+]

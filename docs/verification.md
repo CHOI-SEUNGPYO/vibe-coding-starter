@@ -1,13 +1,13 @@
 # 실제 검증 기록
 
-최초 확인: **2026-11-15**, API·데이터 실습 추가: **2026-11-16**. 이 문서는 설정과 실제 앱 검증이 무엇을 확인했는지 구분하기 위한 기록이다. 새 컴퓨터에서는 `python scripts/setup.py`로 현재 프로필을 복원하고 다시 확인한다.
+최초 확인: **2026-11-15**, API·데이터 실습 및 다섯 예제 공개 준비: **2026-11-16**. 이 문서는 설정과 실제 앱 검증이 무엇을 확인했는지 구분하기 위한 기록이다. 공개 예제의 최신 범위는 [독서 예제 검증 기록](../examples/reading/VERIFICATION.md)에 정리했다. 새 컴퓨터에서는 `python scripts/setup.py`로 현재 프로필을 복원하고 다시 확인한다.
 
 ## 로컬에서 확인한 내용
 
 | 검사 | 확인 결과 |
 | --- | --- |
 | Codex 설정 | CLI `0.169.0-alpha.11.1`의 strict 설정 로딩 성공; 기본 설정과 MCP 조합 검사 |
-| 설치 하네스·스킬 검사 | Python 62개 검사 실행, 실패 없음. 로컬 Windows에서 symlink 권한 관련 2개 건너뜀 |
+| 설치 하네스·스킬 검사 | Python 65개 검사 실행, 실패 없음. 로컬 Windows에서 62개 통과·symlink 권한 관련 3개 건너뜀 |
 | MCP 응답 처리 | Node 11개 검사 통과. 오류·빈 응답·잘못된 출처·인증 실패·사용 한도를 실패로 처리 |
 | 프로필 | 5개 프로필 설치·재설치·전환, 기존 사용자 파일 충돌 시 변경 전 중단 |
 | 깨끗한 복제본 | Git 게시 파일을 바이트 그대로 복제한 뒤 minimal → api → data → automation → web 전환, 무결성 검사와 사용자 프로젝트 설정 보존 확인 |
@@ -27,20 +27,22 @@ MCP 검사는 이름 등록만 확인하지 않는다. 공식 문서 서버에 �
 
 [GitHub Actions](https://github.com/CHOI-SEUNGPYO/vibe-coding-starter/actions/workflows/validate.yml)는 다음을 실행한다. 아래 목록은 검사 구성이고, 각 실행의 성공 여부는 해당 실행 결과가 근거다.
 
-- Windows·macOS·Linux × Python 3.11·3.13: 설치·무결성·실행 검증
+- Windows·macOS·Linux × Python 3.11·3.13: 설치·무결성·실행 검증, minimal·automation 예제 검사
 - Linux × Node.js 22: MCP 응답 회귀 검사, 잠금 파일로 복원한 Playwright MCP와 실제 Chromium 클릭 흐름
+- Windows·macOS·Linux × Python 3.13: API·data 예제 의존성 복원, 앱 테스트와 `pip check`
+- Linux × Node.js 24: web 예제의 타입 검사·테스트·빌드
 
 CI에서 symlink·junction 관련 검사의 실행 또는 건너뜀 여부는 운영체제 권한에 따라 달라진다. 외부 문서 서버 온라인 검사는 수동 setup에 포함한다.
 
 ## 이 검사에 포함되지 않는 것
 
-위 starter 자동 검사만으로 개별 앱의 기능·품질을 보장하지 않는다. 별도로 구현해 시험한 API·데이터 프로젝트의 결과는 아래에 기록했다. 유료 모델의 성능, 사용자의 GitHub CLI 로그인, 선택적 GitHub 원격 MCP 토큰, 배포 계정, 디자인 사이트의 유료 접근은 검증 대상이 아니다. 하네스의 검사 통과를 새로 만든 제품의 검사 통과라고 설명하지 않는다.
+starter 검사와 앱 검사는 별도로 실행하며, 앱 검사를 추가했다고 모든 제품 요구사항을 보장하지 않는다. 최초 API·데이터 실습의 결과는 아래에 기록했다. 유료 모델의 성능, 사용자의 GitHub CLI 로그인, 선택적 GitHub 원격 MCP 토큰, 배포 계정, 디자인 사이트의 유료 접근은 검증 대상이 아니다. 하네스의 검사 통과를 새로 만든 제품의 검사 통과라고 설명하지 않는다.
 
 확인 환경은 Windows, Python 3.15.2, Node.js 24.22.1이다. 의존성은 `package-lock.json`, 외부 스킬은 `skills.lock.json`으로 고정했다. 버전을 바꾸면 이 기록에 기대지 말고 관련 검사를 다시 실행한다.
 
 ## API 프로필 실제 앱 검증 (2026-11-16)
 
-공개 저장소의 `5ae792fb664836a35e5c9f8914e0a57083dd3119`를 별도 폴더에 clone하고 README 순서로 `api` 환경을 적용했다. FastAPI + SQLite 독서 기록 API를 구현한 뒤 아래를 확인했다. 앱·토큰·DB·상세 실험 보고서는 starter 게시 파일에 포함하지 않았다.
+공개 저장소의 `5ae792fb664836a35e5c9f8914e0a57083dd3119`를 별도 폴더에 clone하고 README 순서로 `api` 환경을 적용했다. FastAPI + SQLite 독서 기록 API를 구현한 뒤 아래를 확인했다. 당시에는 앱·토큰·DB·상세 실험 보고서를 게시하지 않았다. 이후 요청에 따라 앱 소스와 가상 결과를 [공개 API 예제](../examples/reading/api/README.md)로 추가했으며 토큰·DB·상세 실험 보고서는 계속 제외한다.
 
 | 단계 | 실제 결과 |
 | --- | --- |
@@ -65,7 +67,7 @@ CI에서 symlink·junction 관련 검사의 실행 또는 건너뜀 여부는 �
 
 ## data 프로필 실제 분석 검증 (2026-11-16)
 
-공개 커밋 `8b7970cd9b662562d268c9896cd6e5869465f576`을 별도 폴더에 clone하고 `python scripts/setup.py --profile data`부터 실행했다. Python 표준 `csv`와 Matplotlib로 가상의 독서 기록을 분석하고 표·JSON·한국어 보고서·PNG를 만들었다. 앱과 상세 시험 보고서는 로컬에 두고 starter에는 설정·사용법과 일반화할 수 있는 검증 근거를 반영했다.
+공개 커밋 `8b7970cd9b662562d268c9896cd6e5869465f576`을 별도 폴더에 clone하고 `python scripts/setup.py --profile data`부터 실행했다. Python 표준 `csv`와 Matplotlib로 가상의 독서 기록을 분석하고 표·JSON·한국어 보고서·PNG를 만들었다. 당시에는 앱과 상세 시험 보고서를 로컬에 두고 설정·사용법과 검증 근거를 반영했다. 이후 앱 소스·공개 샘플·폰트·분석 결과를 [공개 데이터 예제](../examples/reading/data/README.md)로 추가했다. 상세 조사·시험 보고서는 계속 제외한다.
 
 | 단계 | 실제 결과 |
 | --- | --- |

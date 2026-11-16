@@ -1,0 +1,179 @@
+[
+  {
+    "request": {
+      "method": "GET",
+      "path": "/health",
+      "authenticated": false
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "status": "ok"
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "GET",
+      "path": "/api/books",
+      "authenticated": false
+    },
+    "response": {
+      "status": 401,
+      "body": {
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "올바른 Bearer 토큰이 필요합니다.",
+          "details": []
+        }
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "POST",
+      "path": "/api/books",
+      "authenticated": true,
+      "body": {
+        "title": "가상의 작은 숲",
+        "author": "가상 작가 도윤",
+        "status": "reading",
+        "note": "공개 예제 기록"
+      }
+    },
+    "response": {
+      "status": 201,
+      "body": {
+        "title": "가상의 작은 숲",
+        "author": "가상 작가 도윤",
+        "status": "reading",
+        "note": "공개 예제 기록",
+        "id": 1
+      },
+      "location": "/api/books/1"
+    }
+  },
+  {
+    "request": {
+      "method": "GET",
+      "path": "/api/books",
+      "authenticated": true
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "data": [
+          {
+            "title": "가상의 작은 숲",
+            "author": "가상 작가 도윤",
+            "status": "reading",
+            "note": "공개 예제 기록",
+            "id": 1
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "pageSize": 20,
+          "totalItems": 1,
+          "totalPages": 1
+        }
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/books/1",
+      "authenticated": true,
+      "body": {
+        "status": "done",
+        "note": "가상 독서 완료"
+      }
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "title": "가상의 작은 숲",
+        "author": "가상 작가 도윤",
+        "status": "done",
+        "note": "가상 독서 완료",
+        "id": 1
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "GET",
+      "path": "/api/books/1",
+      "authenticated": true
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "title": "가상의 작은 숲",
+        "author": "가상 작가 도윤",
+        "status": "done",
+        "note": "가상 독서 완료",
+        "id": 1
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "POST",
+      "path": "/api/books",
+      "authenticated": true,
+      "body": {
+        "title": "",
+        "author": "가상 저자"
+      }
+    },
+    "response": {
+      "status": 422,
+      "body": {
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "입력값을 확인해 주세요.",
+          "details": [
+            {
+              "location": [
+                "body",
+                "title"
+              ],
+              "message": "String should have at least 1 character",
+              "type": "string_too_short"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/books/1",
+      "authenticated": true
+    },
+    "response": {
+      "status": 204,
+      "body": null
+    }
+  },
+  {
+    "request": {
+      "method": "GET",
+      "path": "/api/books/1",
+      "authenticated": true
+    },
+    "response": {
+      "status": 404,
+      "body": {
+        "error": {
+          "code": "BOOK_NOT_FOUND",
+          "message": "독서 기록을 찾을 수 없습니다.",
+          "details": []
+        }
+      }
+    }
+  }
+]
